@@ -41,7 +41,7 @@ var log = require('../test/util').createLogger('server');
 
 // Creating the server in plain or TLS mode (TLS mode is the default)
 var server;
-if (1) {
+if (process.env.HTTP2_PLAIN) {
   server = http2.raw.createServer({
     log: log
   }, onRequest);
