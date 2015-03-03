@@ -41,7 +41,7 @@ var log = require('../test/util').createLogger('server');
 
 // Creating the server in plain or TLS mode (TLS mode is the default)
 var server;
-if (process.env.HTTP2_PLAIN) {
+if (1) {
   server = http2.raw.createServer({
     log: log
   }, onRequest);
@@ -53,3 +53,4 @@ if (process.env.HTTP2_PLAIN) {
   }, onRequest);
 }
 server.listen(process.env.HTTP2_PORT || 8080);
+console.log('listen 8080\n')

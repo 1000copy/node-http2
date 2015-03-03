@@ -12,7 +12,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 // Sending the request
 var url = process.argv.pop();
-var request = process.env.HTTP2_PLAIN ? http2.raw.get(url) : http2.get(url);
+var request =  http2.raw.get(url)  
 
 // Receiving the response
 request.on('response', function(response) {
