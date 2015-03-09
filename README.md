@@ -1,3 +1,10 @@
+把Testcase跑起来的方法
+$ npm install
+$ npm install -g mocha
+$ mocha 
+
+有测试用例的代码就是要有信心些 ：）
+
 感兴趣，想要研究。
 
 超文本传输协议(HTTP)2 中英文对照版
