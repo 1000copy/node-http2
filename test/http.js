@@ -516,6 +516,9 @@ describe('http.js', function() {
         var server = http2.createServer(options, function(request, response) {
           expect(request.url).to.equal(path);
           var push1 = response.push('/y');
+          // end 方法是谁的？node 内置的stream类的。stream 和Stream是不同的。前者是node内置类，后者是http流类
+          // Q: push1 ()
+          // .end 会调用Stream._finish .When the stream is finishing (the user calls `end()` on it), 
           push1.end(pushedMessage);
           var push2 = response.push({ path: '/y', protocol: 'https:' });
           push2.end(pushedMessage);
