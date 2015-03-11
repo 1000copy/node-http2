@@ -63,6 +63,7 @@ describe('connection.js', function() {
       });
     });
     describe('invalid operation', function() {
+      //unsolicited :未被恳求的，主动提供的
       describe('unsolicited ping answer', function() {
         it('should be ignored', function() {
           var connection = new Connection(util.log, 1, settings);
@@ -84,9 +85,28 @@ describe('connection.js', function() {
     beforeEach(function() {
       c = new Connection(util.log.child({ role: 'client' }), 1, settings);
       s = new Connection(util.log.child({ role: 'client' }), 2, settings);
+      // 双向管道：c发的，直接到s，反过来也是。
+      // 两个connection的流直接连接起来，不必搞什么网络通信即可测试。
+      // 至此，这里无需看到 server.listen(1234, function() {}) 之类的网络侦听和连接发起的代码
+      // 这样的松耦合代码（测试connection，无需启动server,client 的网络）令人愉快！
       c.pipe(s).pipe(c);
     });
-
+    //  mocha的testcase 结构是这样的： {describe ,it ,done }  。要求正确完成调用done，是因为异步结构，作为mocha的框架，无法确知代码何时完成。如果调用了done，那么其他的分支就不必执行了。
+    // 比如代码以下，两个异步分支，要是不调用done来通知mocha，鬼才知道是否应该都执行完才算完？
+    /*
+    describe('do sth', function() {
+      it('expected', function(done) {
+        setTimeout(function() {
+          // branch 1
+          done();
+        }, 10);
+        setTimeout(function() {
+          // branch 2
+          done();
+        }, 10);
+      });
+    });
+    */
     describe('connection setup', function() {
       it('should work as expected', function(done) {
         setTimeout(function() {
@@ -203,6 +223,7 @@ describe('connection.js', function() {
       });
     });
     describe('creating two promises and then using them in reverse order', function() {
+      // monotonous - 单调的
       it('should not result in non-monotonous local ID ordering', function(done) {
         s.on('stream', function(response) {
           response.headers({ ':status': '200' });
