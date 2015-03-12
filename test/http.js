@@ -28,6 +28,7 @@ describe('http.js', function() {
         }).to.throw(Error);
       });
     });
+    // 1000copy : server.timeout ,server._server.timeout ,why backup required?
     describe('property `timeout`', function() {
       it('should be a proxy for the backing HTTPS server\'s `timeout` property', function() {
         var server = new http2.Server(options);
@@ -38,6 +39,7 @@ describe('http.js', function() {
         expect(backingServer.timeout).to.be.equal(newTimeout);
       });
     });
+    //  1000copy ： so as setTimeout ?
     describe('method `setTimeout(timeout, [callback])`', function() {
       it('should be a proxy for the backing HTTPS server\'s `setTimeout` method', function() {
         var server = new http2.Server(options);
@@ -72,6 +74,7 @@ describe('http.js', function() {
       });
     });
   });
+  //  fallback : 可依靠的东西，退却； 回降物 
   describe('OutgoingRequest', function() {
     function testFallbackProxyMethod(name, originalArguments, done) {
       var request = new http2.OutgoingRequest();
