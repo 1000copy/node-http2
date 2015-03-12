@@ -135,6 +135,7 @@ describe('http.js', function() {
       it('should work as expected', function(done) {
         var path = '/x';
         var message = 'Hello world';
+        // so deep call stack !
         // CreateServer 创建一个TCP server:_server 。然后，callback何时调用？
           //  挂接 callback 到Server.Event(request)
           //  server.request 何时emit ?
