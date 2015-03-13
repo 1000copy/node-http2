@@ -379,7 +379,21 @@ describe('framer.js', function() {
       });
     });
   });
- describe('1000copy:ping frame construct', function() {
+ 
+
+  describe('bunyan formatter', function() {
+    describe('`frame`', function() {
+      var format = framer.serializers.frame;
+      it('should assign a unique ID to each frame', function() {
+        var frame1 = { type: 'DATA', data: new Buffer(10) };
+        var frame2 = { type: 'PRIORITY', priority: 1 };
+        expect(format(frame1).id).to.be.equal(format(frame1));
+        expect(format(frame2).id).to.be.equal(format(frame2));
+        expect(format(frame1)).to.not.be.equal(format(frame2));
+      });
+    });
+  });
+  describe('1000copy:ping frame construct', function() {
       it('frame cons.', function() {
         var f =  {
             type: 'PING',
@@ -407,7 +421,7 @@ describe('framer.js', function() {
         // console.log(header_buffer);
       });
   });
- describe('1000copy:simplest ping frame ', function() {
+ describe('1000copy:ping frame wire to object ', function() {
       it('frame cons.', function() {
         
           // length,type,flags,stream id
@@ -417,7 +431,13 @@ describe('framer.js', function() {
         expect(frame.type ,'PING');
         expect(frame.flags.ACK ,false);
         expect(frame.stream).to.deep.equal(0x0f);
+      });
+  });
+ describe('1000copy:ping frame object to wire ', function() {
+      it('frame cons.', function() {
         
+          // length,type,flags,stream id
+        var r = new Buffer('000008' + '06' + '00' + '0000000F' +   '1234567887654321', 'hex');                
         var f =  {
             type: 'PING',
             flags: { ACK: false },
@@ -429,18 +449,5 @@ describe('framer.js', function() {
         Serializer.commonHeader(f, buffers);
         expect(buffers[0]).to.deep.equal(r.slice(0,9));        
       });
-  });
-
-  describe('bunyan formatter', function() {
-    describe('`frame`', function() {
-      var format = framer.serializers.frame;
-      it('should assign a unique ID to each frame', function() {
-        var frame1 = { type: 'DATA', data: new Buffer(10) };
-        var frame2 = { type: 'PRIORITY', priority: 1 };
-        expect(format(frame1).id).to.be.equal(format(frame1));
-        expect(format(frame2).id).to.be.equal(format(frame2));
-        expect(format(frame1)).to.not.be.equal(format(frame2));
-      });
-    });
   });
 });
