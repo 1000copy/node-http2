@@ -407,7 +407,29 @@ describe('framer.js', function() {
         // console.log(header_buffer);
       });
   });
+ describe('1000copy:simplest ping frame ', function() {
+      it('frame cons.', function() {
+        
+          // length,type,flags,stream id
+        var r = new Buffer('000008' + '06' + '00' + '0000000F' +   '1234567887654321', 'hex');        
+        var frame = {};
+        Deserializer.commonHeader(r, frame);
+        expect(frame.type ,'PING');
+        expect(frame.flags.ACK ,false);
+        expect(frame.stream).to.deep.equal(0x0f);
+        
+        var f =  {
+            type: 'PING',
+            flags: { ACK: false },
+            stream: 15,
+            data: new Buffer('1234567887654321', 'hex')
+          };
 
+        var buffers = [f.data]; // pay load as buffer        
+        Serializer.commonHeader(f, buffers);
+        expect(buffers[0]).to.deep.equal(r.slice(0,9));        
+      });
+  });
 
   describe('bunyan formatter', function() {
     describe('`frame`', function() {
