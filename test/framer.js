@@ -289,7 +289,8 @@ for (var idx = 0; idx < padded_test_frames.length; idx++) {
 describe('framer.js', function() {
   describe('Serializer', function() {
     describe('static method .commonHeader({ type, flags, stream }, buffer_array)', function() {
-      it('should add the appropriate 9 byte header buffer in front of the others', function() {
+      // it('should add the appropriate 9 byte header buffer in front of the others', function() {
+      it('.commonHeader应该在buffer前加入FrameHeader', function() {
         for (var i = 0; i < test_frames.length; i++) {
           var test = test_frames[i];
           var buffers = [test.buffer.slice(9)];
@@ -365,7 +366,7 @@ describe('framer.js', function() {
         });
       });
     });
-
+    // 不懂。这些buffers洗牌后，都乱了，还做什么验证。
     describe('transform stream', function() {
       it('should transform buffers to appropriate frame object', function() {
         var stream = new Deserializer(util.log);
