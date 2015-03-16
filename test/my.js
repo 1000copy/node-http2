@@ -1,4 +1,9 @@
 var expect = require('chai').expect;
+var util = require('./util');
+
+var framer = require('../lib/protocol/framer');
+var Serializer = framer.Serializer;
+var Deserializer = framer.Deserializer;
 
 describe('my.js', function() {
   describe('scenario', function() {
@@ -43,5 +48,62 @@ describe('my.js', function() {
       // console.log(1)
       done();
     });
+      describe('1000copy:ping frame construct', function() {
+      it('frame cons.', function() {
+        var f =  {
+            type: 'PING',
+            flags: { ACK: false },
+            stream: 15,
+
+            data: new Buffer('1234567887654321', 'hex')
+          };
+        var r = new Buffer('000008' + '06' + '00' + '0000000F' +   '1234567887654321', 'hex');
+        
+        var frame = {};
+        Deserializer.commonHeader(r.slice(0,9), frame);
+        expect(frame).to.deep.equal({
+          type:   f.type,
+          flags:  f.flags,
+          stream: f.stream
+        });
+        var test = f ;
+        var buffers = [r.slice(9)];
+        var header_buffer = r.slice(0,9);
+        Serializer.commonHeader(test, buffers);
+        expect(buffers[0]).to.deep.equal(header_buffer);
+        // console.log(f)
+        // console.log(buffers);
+        // console.log(header_buffer);
+      });
+      });
+     describe('1000copy:ping frame wire to object ', function() {
+          it('frame cons.', function() {
+            
+              // length,type,flags,stream id
+            var r = new Buffer('000008' + '06' + '00' + '0000000F' +   '1234567887654321', 'hex');        
+            var frame = {};
+            Deserializer.commonHeader(r, frame);
+            expect(frame.type ,'PING');
+            expect(frame.flags.ACK ,false);
+            expect(frame.stream).to.deep.equal(0x0f);
+          });
+      });
+     describe('1000copy:ping frame object to wire ', function() {
+          it('frame cons.', function() {
+            
+              // length,type,flags,stream id
+            var r = new Buffer('000008' + '06' + '00' + '0000000F' +   '1234567887654321', 'hex');                
+            var f =  {
+                type: 'PING',
+                flags: { ACK: false },
+                stream: 15,
+                data: new Buffer('1234567887654321', 'hex')
+              };
+
+            var buffers = [f.data]; // pay load as buffer        
+            Serializer.commonHeader(f, buffers);
+            expect(buffers[0]).to.deep.equal(r.slice(0,9));        
+          });
+      });
   });
 });
