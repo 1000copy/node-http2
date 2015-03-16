@@ -525,23 +525,49 @@ describe('http.js', function() {
         });
       });
     });
-    describe('server push', function() {
+    describe('2000serverpush', function() {
       it('should work as expected', function(done) {
         var path = '/x';
-        var message = 'Hello world';
+        var message = 'server response';
         var pushedPath = '/y';
-        var pushedMessage = 'Hello world 2';
-
+        var pushedMessage = 'promise 1';
+        var pushedPath1 = '/y';
+        var pushedMessage1 = 'promise 2';
         var server = http2.createServer(options, function(request, response) {
           expect(request.url).to.equal(path);
           var push1 = response.push('/y');
           push1.end(pushedMessage);
-          var push2 = response.push({ path: '/y', protocol: 'https:' });
-          push2.end(pushedMessage);
+          var push2 = response.push({ path: '/z', protocol: 'https:' });
+          push2.end(pushedMessage1);
           response.end(message);
         });
 
         server.listen(1235, function() {
+          //  http2.get 
+          //  Agent.get 
+          //  Agent.request & Agent.end 
+          //  OutgoingRequest.prototype._start 
+          //  this.stream.headers(headers);
+          //      * **headers(headers)**: send headers
+          /*
+                  Stream.prototype.headers = function headers(headers) {
+                    this._pushUpstream({
+                      type: 'HEADERS',
+                      flags: {},
+                      stream: this.id,
+                      headers: headers
+                    });
+                  };
+          */
+          // this.upstream.push(frame);//注意this.upstream 是Flow 对象，而不是Stream
+          // 
+          // this._writeUpstream ; 因为 
+          //        _initializeDataFlow()...this.upstream.write = this._writeUpstream.bind(this);
+          // frame 进入流，就开始Serialize 干活了
+
+          /*
+         
+          */  
           var request = http2.get('https://localhost:1235' + path);
           done = util.callNTimes(5, done);
 
@@ -554,10 +580,10 @@ describe('http.js', function() {
           });
 
           request.on('push', function(promise) {
-            expect(promise.url).to.be.equal(pushedPath);
+            // expect(promise.url).to.be.equal(pushedPath);
             promise.on('response', function(pushStream) {
               pushStream.on('data', function(data) {
-                expect(data.toString()).to.equal(pushedMessage);
+                // expect(data.toString()).to.equal(pushedMessage);
                 done();
               });
               pushStream.on('end', done);
@@ -570,7 +596,7 @@ describe('http.js', function() {
     // mocha -g new1 
     describe('new1', function() {
       it('2', function(done) {
-        // console.log('new1 ');
+         var request = http2.get('https://localhost:1235' + path);
         done();
       });
     });

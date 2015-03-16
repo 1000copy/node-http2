@@ -136,6 +136,7 @@ var test_frames = [{
     data: new Buffer('12345678', 'hex')
   },
   buffer: new Buffer('000008' + '05' + '00' + '0000000F' +   '00000003' + '12345678', 'hex')
+                      
 
 }, {
   frame: {
