@@ -20,15 +20,16 @@ function execute_sequence(stream, sequence, done) {
   }
 
   var outgoing_frames = [];
-
+  // 截获 emit，以便事件发生时可以把它放置到[] event内。
   var emit = stream.emit, events = [];
   stream.emit = function(name) {
     if (recorded_events.indexOf(name) !== -1) {
       events.push({ name: name, data: Array.prototype.slice.call(arguments, 1) });
     }
+    // Event Redirect 事件转发，以便事件体系的运作
     return emit.apply(this, arguments);
   };
-
+  // 构建命令commands[],checks[] 两个数组
   var commands = [], checks = [];
   sequence.forEach(function(step) {
     if ('method' in step || 'incoming' in step || 'outgoing' in step || 'wait' in step || 'set_state' in step) {
@@ -263,6 +264,11 @@ describe('stream.js', function() {
           { outgoing: { type: 'DATA', flags: { END_STREAM: true  }, data: new Buffer(0) } },
 
           { wait    : 10 },
+          // eureka !
+          // incoming 是命令，而不是事件。就是说不是前面的命令引发这个incoming Frame，然后被incoming捕获
+          // 而是在incoming的时候，写入流数据
+          // 理解 execute_sequence 的关键就是纠正它是事件的想法。
+          // 为了此问题，困惑了多少天：为什么它没有建立任何网络，就可以有incoming event呢？
           { incoming: { type: 'HEADERS', flags: { }, headers: { ':status': 200 } } },
           { incoming: { type: 'DATA'   , flags: { END_STREAM: true  }, data: new Buffer(5) } },
           { event   : { name: 'headers', data: [{ ':status': 200 }] } },
