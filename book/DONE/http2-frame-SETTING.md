@@ -35,7 +35,7 @@ TODO  1
 
 ### 参数
 
- **SETTINGS_HEADER_TABLE_SIZE (1)** : Header Table 是被用于Header Compression的一个数据结构，在发送端和接收端都需要维护。发送端以此通知远端，header table的最大承载量。初始值是4,096个字节。
+ **SETTINGS_HEADER_TABLE_SIZE (1)** : Header Table 是被用于Header Compression的一个数据结构，在发送端和接收端都需要维护。发送端以此通知远端，header table的最大承载量。初始值是4,096个字节。参考http2-head compression 部分
  - **SETTINGS_ENABLE_PUSH (2)** : 1为许可，0为禁止。初始值为1。终端在接收到此参数为0的情况下绝对不能发送服务器推送承诺帧。否则视为协议错误。
 
  - **SETTINGS_MAX_CONCURRENT_STREAMS (3)** : 发送者允许对等端可以发起的最大并发流。初始化时这个值没有限制。建议值不要大于100,以免不必要的限制并行。
