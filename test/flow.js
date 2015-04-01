@@ -161,6 +161,7 @@ describe('flow.js', function() {
         // Sender side
         var frameNumber = util.random(5, 8);
         var input = [];
+        // 后面的pipe会引发_send的调用
         flow1._send = function _send() {
           if (input.length >= frameNumber) {
             this.push({ type: 'DATA', flags: { END_STREAM: true }, data: new Buffer(0) });
@@ -171,7 +172,7 @@ describe('flow.js', function() {
             this.push({ type: 'DATA', flags: {}, data: buffer });
           }
         };
-
+        // _send 的数据来了的话，_receive会被调用
         // Receiver side
         var output = [];
         flow2._receive = function _receive(frame, callback) {
