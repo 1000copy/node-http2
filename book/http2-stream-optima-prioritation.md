@@ -1,23 +1,41 @@
-基于http实现的browser，采用的是对低优先级资源节流的做法，比如webkit的ResourceLoadSchedule，就是首先载入影响绘制的html，js，css，第一次绘制完毕，dom加载完成，才放出更多的资源（如img）请求。
+谈及http/2，大家都会认为多播、服务器推送是最重要的。可是优先级调度一样非常关键。尽管客户端请求可以通过多播一次发出，服务器相应也可以通过多播，推送提高带宽利用率，然而，不分主次的使用，很可能会导致页面加载时间更长。因为高优先级的资源本应优先传递，却因为多播而必须和低优先级资源竞争，导致整体延误。
 
-这样做的问题，就是在启动到dom loaded之间对带宽的利用不足。
-既然http2是多播的，为了充分利用带宽，是否可以考虑在解析html后获知的全部资源一次发出，指定每个资源（流）的优先级，让服务器来完成优先级调度呢？通过优先级指定，就可以避免在高优先级被挂起（阻塞）的时候，低优先级的资源暂居了网络通道了。简单幼稚的一个可行实现，就是按照优先级队列来做出响应即可。这个做法，在spdy（http2前身）上叫做请求优先级（Request prioritization)。
+曾有人以spdy协议做过实验[1]，准备：
+1. 服务器启用spdy
+2. 客户端关闭 webkit的资源加载调度特性( ResourceLoadScheduler)， 不在节流，而是立刻发送全部请求
 
-### 流优先级
+这样，本来由客户端做的节流以便调度优先级，转化为由支持SPDY服务器来做调度。加上多播和压缩，期望是会带来性能提升的。然而事与愿违：这样做的结果比起单纯的HTTP实际上是更慢了。细究发现，实验服务器（ngnix beta）并没有做优先级管理。目前，nginx的SPDY并不完善的，却被贸然的相对广泛的采用。
 
-新建流的终端可以在报头帧中包含优先级信息来对流标记优先级。对于已存在的流，优先级帧可以用来改变流优先级。
+为什么说http/2，却以spdy举例？因为spdy就是http/2的前身，并且一直并行演化中。
 
-http2 为了资源定优先级，标准化了依赖树的算法。以一个由多个流构成的依赖树为依据算法，以此来分配资源。
+###动机
 
-依赖流是更好的浏览器渲染约束的表达。渲染一个页面本身就是一个资源传递依赖的过程。比如脚本会阻塞html的解析，最终的布局依赖于外部的css。流依赖这个概念的引入，允许浏览器更简洁的表达场景的变化:比如用户改变了当前标签，浏览器只要通知标签依赖的树根变化即可。
+基于http实现的browser，采用的是对低优先级资源节流的做法，避免在高优先级资源没有完成前被低优先级资源挤占了带宽。
+
+这样做是合理的，但是也带来了问题——就是在启动连接到文档的dom装入之间对带宽的利用不足：即使关键资源准备时间很长，网络再空闲，期间也不可以传递其他低优先级资源。
+
+为了充分利用带宽，考虑到http2是多播的，这样的想法就是合理的了：客户端解析html后获知的全部资源，设定好资源（流）优先级，一次性发出给服务器。这样，优先级的调度就到了服务器一侧：不再由客户端通过节流的方式来体现优先级，而是把优先级作为一个提示，发给服务器，由服务器来完成最终的优先级调度。
+
+服务器的做法可以有很多。简单幼稚的一个可行实现，就是按照优先级信息排出队列，次序做出响应即可。当然，http/2的实际做法采用的是依赖树算法（后面会细化此算法）。
+
+尽管优先级信息看起来应该是一个代表优先级高低的数字字段，但是这样的认识实际上是一个误解。优先级信息不是一个数字字段，而是3个字段。认识到这个误解的可能存在对于理解以下内容是非常重要的。
+
+http2 客户端发送新建的流和现有流的依赖关系和依赖权重建议给服务器，以及对现有流调整依赖关系和依赖权重的建议给服务器，由服务器根据这些信息来构建依赖流的关系树，然后由这个依赖树来决定为每个流确定发送次序以及分配计算资源，从而完成对流定优先级的效果。
+
+比起直接了当的单一优先级数值，采用依赖流+权重的方式，可以更好的表达浏览器渲染约束需要的依赖关系。渲染一个页面本身就是一个资源传递依赖的过程。比如脚本会阻塞html的解析，最终的布局依赖于外部的样式表。
+
+###依赖树的构建
+
+和优先级有关的Frame有两种，分别为 HEADER,PRIORITATION 。新建流的终端可以在HEADER中包含优先级信息来对流标记优先级。对于已存在的流，PRIORITATION可以用来改变流优先级。
 
 
-依赖树的构建
+这些字段是：
 
-和优先级有关的Frame有两个，分别为HEADER,PRIORITATION，但是两个frame中影响到优先级的字段是一样的。回顾下两个Frame的格式，这些字段是：
-- **E** ： 1位的标记用于标识流依赖是否是专用的。可选。Flags:PRIORITY 设置后要有此字段
-- **Stream Dependency** ： StreamID。31位流 .可选。Flags:PRIORITY 设置后要有此字段
-- **Weight** : 流的8位权重标记。添加一个1-256的值来存储流的权重。这个字段是可选的，并且只在优先级标记设置的情况下才呈现。
+- **E** ： 1位的标记用于标识流依赖是否是专用的。可选。
+- **Stream Dependency** ： StreamID。31位流 .可选。
+- **Weight** : 流的8位权重标记。添加一个1-256的值来存储流的权重。
+
+对于HEADER,PRIORITATION而言，这3个字段都是可选的，标志 Flags:PRIORITY 设置表明此3个字段存在与否。
 
 
 可以通过**Stream  Dependency** 指定依赖另外一个流。当指定了一个依赖流，流会作为一个子流加入依赖树内。比如:B流，C流依赖于A流（左下图），如果D流通过HEADER frame创建，并同时指定依赖A流，那么依赖树就会变成右下图那样，b，d，c的次序不重要。
@@ -66,7 +84,7 @@ http2 为了资源定优先级，标准化了依赖树的算法。以一个由�
   }
 ```
 
-这样的情况，如今是如何传输的呢？index.html被接收然后解析，文档解析器(Document Parser)会发现a.js,发出请求并且被阻塞；接下来，探测解析器（Speculative Parser ),继续探测发现a.jpg,b.jpg,style.css 并向服务器发出资源请求，然后a.js获得并被解析执行，发现依赖b.js,然后发出b.js资源请求，然后文档解析器再次被阻塞，... 。如图：
+这样的情况，如今是如何传输的呢？index.html被接收然后解析，文档解析器(Document Parser)会发现a.js,发出请求并且被阻塞；接下来，探测解析器（Speculative Parser ),继续探测发现a.jpg,b.jpg,style.css 并向服务器发出资源请求，然后a.js获得并被解析执行，发现依赖b.js,然后发出b.js资源请求，然后文档解析器再次被阻塞... 。如图：
 
 ```
     client                             server
@@ -84,9 +102,9 @@ http2 为了资源定优先级，标准化了依赖树的算法。以一个由�
     |<----b.js      -------------------- |
 ```
 
-结论也就出来了，非常低效。唯有style.css,b.js完成，整个页面才完成加载，而关键的b.js图标为被其他不重要的资源（img）竞争而传递缓慢。
+分析完毕，结论也就出来了：非常低效。唯有style.css,b.js完成，整个页面才完成加载，而关键的b.js因为被其他不重要的资源（img）竞争而传递缓慢。
 
-有了优先级帧（PRIORITITION)，依赖树算法，并发技术的http2，有可能改善这样情况，只要适合加入 PRIORITITION 帧，按照依赖算法计算优先级即可。
+采用了优先级帧（PRIORITITION)，依赖树算法，并发技术的http2，有可能改善这样情况，只要适合加入 PRIORITITION 帧，按照依赖算法计算优先级即可。
 
 
 ```
@@ -136,6 +154,8 @@ http2 为了资源定优先级，标准化了依赖树的算法。以一个由�
 
 ###Webkit 的传统资源优先级方法：代码实例
 
+webkit的ResourceLoadSchedule，就是首先载入影响绘制的html，js，css，第一次绘制完毕，dom加载完成，才放出更多的资源（如img）请求。
+
 ```
 https://github.com/adobe/chromium/blob/master/content/browser/renderer_host/resource_dispatcher_host_impl.cc 
 
@@ -167,7 +187,6 @@ net::RequestPriority DetermineRequestPriority(ResourceType::Type type) {
       return net::IDLE;
 
     default:
-      // When new resource types are added, their priority must be considered.
       NOTREACHED();
       return net::LOW;
   }
@@ -264,7 +283,9 @@ func TestPriorityExclusiveZero(t *testing.T) {
 
 ```
 ###ref
-Proposal for Stream Dependencies in SPDY
+[1]. Proposal for Stream Dependencies in SPDY
 https://docs.google.com/document/d/1pNj2op5Y4r1AdnsG8bapS79b11iWDCStjCNHo3AWD0g/edit#
 
-draft-ietf-httpbis-http2-15 - Hypertext Transfer Protocol version 2 - https://tools.ietf.org/html/draft-ietf-httpbis-http2-15#section-5.3
+[2].  draft-ietf-httpbis-http2-15 - Hypertext Transfer Protocol version 2 - https://tools.ietf.org/html/draft-ietf-httpbis-http2-15#section-5.3
+
+[3]. Prioritization Is Critical To SPDY - Insouciant - https://insouciant.org/tech/prioritization-is-critical-to-spdy/
