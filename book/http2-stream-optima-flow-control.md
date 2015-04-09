@@ -1,3 +1,13 @@
+Comments on Microsoft’s SPDY Proposal « Mike's Lookout - https://www.belshe.com/2012/03/29/comments-on-microsofts-spdy-proposal/
+
+c) Removal of Flow Control
+尽管tcp有流控，但是不能替代spdy的流控，它依然是必要的。
+The Microsoft proposal is quick to dismiss SPDY’s per-stream flow control as though it is already handled at the TCP layer. However, this is incorrect. TCP handles flow control for the TCP stream. Because SPDY introduces multiple concurrent flows, a new layer of flow control is necessary. Imagine you were sending 10 streams to a server, and one of those streams stalled out (for whatever reason). Without flow control, you either have to terminate all the streams, buffer unbounded amounts of memory, or stall all the streams. None of these are good outcomes, and TCP’s flow control is not the same as SPDY’s flow control.
+
+This may be an example of where SPDY’s implementation experience trumps（胜过） any amount of protocol theory. For those who remember, earlier drafts of SPDY didn’t have flow control. We were aware of it long ago, but until we fully implemented SPDY, we didn’t know how badly it was needed nor how to do it in a performant and simple manner. I can’t emphasize enough with protocols how important it is to actually implement your proposals. If you don’t implement them, you don’t really know if it works.
+
+
+
 https://docs.google.com/document/d/1pNj2op5Y4r1AdnsG8bapS79b11iWDCStjCNHo3AWD0g/edit#
 
 h2load - HTTP/2 benchmarking tool - HOW-TO — nghttp2 0.7.9-DEV documentation - https://nghttp2.org/documentation/h2load-howto.html

@@ -251,7 +251,7 @@ describe('stream.js', function() {
     });
   });
   describe('test scenario', function() {
-    describe('sending request', function() {
+    describe('sending', function() {
       it('should trigger the appropriate state transitions and outgoing frames', function(done) {
         execute_sequence([
           { method  : { name: 'headers', arguments: [{ ':path': '/' }] } },

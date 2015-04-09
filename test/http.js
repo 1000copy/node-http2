@@ -139,14 +139,14 @@ describe('http.js', function() {
         // CreateServer 创建一个TCP server:_server 。然后，callback何时调用？
           //  挂接 callback 到Server.Event(request)
           //  server.request 何时emit ?
-          //  _start 方法内，代码：
-          //  request.once('ready', self.emit.bind(self, 'request', request, response));
+            //  _start 方法内，代码：
+            //  request.once('ready', self.emit.bind(self, 'request', request, response));
           // 那么 ，request.ready 何时fire？
-          //  IncomingRequest Class ,function _startHeader ,last line : this.emit('ready');
+            //  IncomingRequest Class ,function _startHeader ,last line : this.emit('ready');
           // 那么 IncomingRequest._onHeader 何时调用？
-          // IncomingRequest HIHERIED IncomingMessage,so 那么 IncomingRequest._onHeader === IncomingMessage._onHeader 
-          // 挂接在stream.headers , stream.once('headers', this._onHeaders.bind(this)); OF function IncomingMessage(stream) {}
-          // TO stream._onHeaders
+            // IncomingRequest HIHERIED IncomingMessage,so 那么 IncomingRequest._onHeader === IncomingMessage._onHeader 
+            // 挂接在stream.headers , stream.once('headers', this._onHeaders.bind(this)); OF function IncomingMessage(stream) {}
+            // TO stream._onHeaders
         // have a rest !!!
         var server = http2.createServer(options, function(request, response) {
           expect(request.url).to.equal(path);
