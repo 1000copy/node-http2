@@ -22,7 +22,9 @@ function execute_sequence(stream,sequence, done) {
   stream.emit = function(name) {
     if (recorded_events.indexOf(name) !== -1) {
       events.push({ name: name, data: Array.prototype.slice.call(arguments, 1) });
+      // console.log("emit:"+name)
     }
+
     // Event Redirect 事件转发，以便事件体系的运作
     return emit.apply(this, arguments);
   };
@@ -49,6 +51,7 @@ function execute_sequence(stream,sequence, done) {
       if ('method' in command) {
         var value = stream[command.method.name].apply(stream, command.method.arguments);
         if (command.method.ret) {
+          console.log("1")
           command.method.ret(value);
         }
         execute(callback);
@@ -100,27 +103,36 @@ function execute_sequence(stream,sequence, done) {
 // test command :  mocha -g mysend
 describe('mystream.js', function() {
     describe('mysend', function() {
-      it('should trigger the appropriate state transitions and outgoing frames', function(done) {
-        // console.log(stream);
+      it('trigger the appropriate state transitions', function(done) {
         var stream = createStream();
-        // stream.headers({ ':path': '/' });
-        execute_sequence(stream,[
-          { method  : { name: 'headers', arguments: [{ ':path': '/' }] } },
-          { outgoing: { type: 'HEADERS', flags: { }, headers: { ':path': '/' } } },
-          { event   : { name: 'state', data: ['OPEN'] } },
-
-          { wait    : 5 },
-          { method  : { name: 'end', arguments: [] } },
-          { event   : { name: 'state', data: ['HALF_CLOSED_LOCAL'] } },
-          { outgoing: { type: 'DATA', flags: { END_STREAM: true  }, data: new Buffer(0) } },
-
-          { wait    : 10 },
-          { incoming: { type: 'HEADERS', flags: { }, headers: { ':status': 200 } } },
-          { incoming: { type: 'DATA'   , flags: { END_STREAM: true  }, data: new Buffer(5) } },
-          { event   : { name: 'headers', data: [{ ':status': 200 }] } },
-          { event   : { name: 'state', data: ['CLOSED'] } },
-          { active  : 0 }
-        ], done);
+        //header 
+        stream.headers({ ':path': '/' });
+        var frame = stream.upstream.read() 
+        expect(frame.type).to.be.equal('HEADERS')
+        expect(stream.state).to.be.equal('OPEN')
+        // end stream
+        stream.end()
+        expect(stream.state).to.be.equal('HALF_CLOSED_LOCAL')
+        var frame = stream.upstream.read() 
+        expect(frame.type).to.be.equal('DATA')
+        expect(frame.flags.END_STREAM).to.be.equal(true)
+        // incoming
+ 
+        var activeCount = 0;
+        function count_change(change) {
+          activeCount += change;        
+        }
+        // stream.on('headers',function(headers){console.log(headers)})
+        // stream.on('readable',function(){console.log('waiting you more time')})
+        incoming = { type: 'HEADERS', flags: { }, headers: { ':status': 200 } }
+        incoming.count_change = count_change;
+        stream.upstream.write(incoming );
+        data = { type: 'DATA'   , flags: { END_STREAM: true  }, data: new Buffer(5) } 
+        data.count_change = count_change;
+        stream.upstream.write(data);
+        expect(stream.state).to.be.equal('CLOSED')
+        done();
       });
     });   
+
 });
