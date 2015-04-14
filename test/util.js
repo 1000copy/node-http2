@@ -20,6 +20,7 @@ if (process.env.HTTP2_LOG) {
       name: name,
       stream: logOutput,
       level: process.env.HTTP2_LOG,
+      // level:'info',
       serializers: require('../lib/http').serializers
     });
   };

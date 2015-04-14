@@ -52,6 +52,7 @@ describe('flow.js', function() {
         expect(flow._send.bind(flow)).to.throw(Error);
       });
     });
+
     describe('._increaseWindow(size) method', function() {
       it('should increase `this._window` by `size`', function() {
         flow._send = util.noop;
@@ -108,14 +109,17 @@ describe('flow.js', function() {
         });
       });
     });
+    // Output queue vs. Flow control queue
     describe('.push(frame) method', function() {
       it('should push `frame` into the output queue or the flow control queue', function() {
         var priorityFrame = { type: 'PRIORITY', flags: {}, priority: 1 };
         var dataFrame = { type: 'DATA', flags: {}, data: { length: 10 } };
         flow._window = 10;
-
-        flow.push(dataFrame);     // output queue
-        flow.push(dataFrame);     // flow control queue, because of depleted window
+        // flow.push 是自己的方法，和stream.push 无关。
+        // 不过，flow.push 通过flow._push ,flow._parentPush,最终还是调用到了Deplex.push 。||| Duplex.prototype.push.call(this, frame) |||;
+        // 所以说，很容易弄混!!!!!!
+        flow.push(dataFrame);     // output queue 直接到输出队列
+        flow.push(dataFrame);     // flow control queue, because of depleted window ..depleted : 废弃的//到流控队列，因为_window的流控原因
         flow.push(priorityFrame); // flow control queue, because it's not empty
 
         expect(flow.read()).to.be.equal(dataFrame);
@@ -123,7 +127,7 @@ describe('flow.js', function() {
         expect(flow._queue[1]).to.be.equal(priorityFrame);
       });
     });
-    describe('.write() method', function() {
+    describe('sanrex.write() method', function() {
       it('call with a DATA frame should trigger sending WINDOW_UPDATE if remote flow control is not' +
          'disabled', function(done) {
         flow._window = 100;
@@ -131,7 +135,15 @@ describe('flow.js', function() {
         flow._receive = function(frame, callback) {
           callback();
         };
-
+        // write -> _write ,then in _write {},calling restoreWindows if frame is DATA.
+        // restoreWindows push WINDOWS_UPDATE for reader consume .
+        // it is correct ,by Why do it ?
+        // 收到一个数据帧，就会发一个WINDOW_UPDATE来对此数据帧做ack。 
+        // 啊呀，明白了。
+        // 两方设置到初始_window,发送方发多少就减多少。然后接收方收到后，做一个update,WINDOW_UPDATE,让发送方把这个不断减少的_window恢复回去。
+        // 如果不发的此帧的话，对方的_window到 0就不能发送任何数据了。
+        // 这就是流控算法。
+        // 之所以一个flow可以write，可以等待read，因为它是全！双！工！
         var buffer = new Buffer(util.random(10, 100));
         flow.write({ type: 'DATA', flags: {}, data: buffer });
         flow.once('readable', function() {
