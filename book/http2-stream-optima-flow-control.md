@@ -1,3 +1,64 @@
+这个别扭的stream，终于有点适应了。
+call write表示写入这模块管道，就是等于说来数据了呃。
+call read 表示调用者需要数据，你准备去。
+
+			describe('sanrex.write() method', function() {
+		      it('call with a DATA frame should trigger sending WINDOW_UPDATE if remote flow control is not' +
+		         'disabled', function(done) {
+		        flow._window = 100;
+		        flow._send = util.noop;
+		        flow._receive = function(frame, callback) {
+		          callback();
+		        };
+		        // write -> _write ,then in _write {},calling restoreWindows if frame is DATA.
+		        // restoreWindows push WINDOWS_UPDATE for reader consume .
+		        // it is correct ,by Why do it ?
+		        // 收到一个数据帧，就会发一个WINDOW_UPDATE来对此数据帧做ack。 
+		        // 啊呀，明白了。
+		        // 两方设置到初始_window,发送方发多少就减多少。然后接收方收到后，做一个update,WINDOW_UPDATE,让发送方把这个不断减少的_window恢复回去。
+		        // 如果不发的此帧的话，对方的_window到 0就不能发送任何数据了。
+		        // 这就是流控算法。
+		        // 之所以一个flow可以write，可以等待read，因为它是全！双！工！
+		        var buffer = new Buffer(util.random(10, 100));
+		        flow.write({ type: 'DATA', flags: {}, data: buffer });
+		        flow.once('readable', function() {
+		          expect(flow.read()).to.be.deep.equal({
+		            type: 'WINDOW_UPDATE',
+		            flags: {},
+		            stream: flow._flowControlId,
+		            window_size: buffer.length
+		          });
+		          done();
+		        });
+		      });
+		    });
+		  
+
+再看这个图，就比较容易懂。buffer是stream本身提供的，不可见。_read是流本来就调用的，l_send
+
+// Outgoing frames - sending procedure
+// -----------------------------------
+
+//                                         flow
+//                +-------------------------------------------------+
+//                |                                                 |
+//                +--------+           +---------+                  |
+//        read()  | output |  _read()  | flow    |  _send()         |
+//     <----------|        |<----------| control |<-------------    |
+//                | buffer |           | buffer  |                  |
+//                +--------+           +---------+                  |
+//                | input  |                                        |
+//     ---------->|        |----------------------------------->    |
+//       write()  | buffer |  _write()              _receive()      |
+//                +--------+                                        |
+//                |                                                 |
+//                +-------------------------------------------------+
+
+比如说，发送端的初始window 为100，发送了一个DATA帧长度70，这时window = 100 - 70 = 30，如果接收端会送一个WINDOW_UPDATE,指定的Window Size Increment= 70,那么发送端的window = 30 + 70 ,恢复到100。
+
+这个案例实在显得很幼稚，看起来就是发起端发送了70字节的数据，发送窗口减小，接收端拿到70字节，就会会送一个窗口增量。毫无流量控制的令人炫目的智能色彩。可是，有人就是这样实现的。我说的是node-http2。
+
+
 Comments on Microsoft’s SPDY Proposal « Mike's Lookout - https://www.belshe.com/2012/03/29/comments-on-microsofts-spdy-proposal/
 
 c) Removal of Flow Control
