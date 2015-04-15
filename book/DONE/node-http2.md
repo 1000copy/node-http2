@@ -61,4 +61,9 @@ node-http2大量的使用stream。Deplux，Passthrough,Transform竞相登场。�
 
 bunyan 本意应该取自bunyan，作家，作品为<天路历程>。回到作为logger的bunyan，官方文档就很简单，我做了一个更加简单的[小抄](node-bunyan-cheatsheet.md)
 
+### cmder
+
+没有了ide，我就得裸露在命令行的面前。并且，我常常使用windows，它的命令行实在是令人欲仙欲死。所以，尽管有点离题，我还是满怀兴奋的对cmder加上一笔。实在舒服，特别是需要拷贝粘贴的时候。
+
+
 有了这样的基础又基础的知识，阅读node-http2可以减少些许痛苦。
