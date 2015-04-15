@@ -26,6 +26,7 @@ function expectPriorityOrder(priorities) {
 describe('connection.js', function() {
   describe('Connection class', function() {
     describe('method ._insert(stream)', function() {
+      // 具体点不好吗？非要弄一堆随机。随机控嘛。
       it('should insert the stream in _streamPriorities in a place determined by stream._priority', function() {
         var streams = [];
         var connection = Object.create(Connection.prototype, { _streamPriorities: { value: streams }});
@@ -43,6 +44,33 @@ describe('connection.js', function() {
     describe('method ._reprioritize(stream)', function() {
       it('should eject and then insert the stream in _streamPriorities in a place determined by stream._priority', function() {
         var streams = [];
+        //  Object.create() is an excellent choice for creating an object without going through its constructor 
+        // 
+        //      http://www.htmlgoodies.com/beyond/javascript/object.create-the-new-way-to-create-objects-in-javascript.html
+        /*
+                        var Car2 = Object.create(null); //this is an empty object, like {}
+                Car2.prototype = {
+                  getInfo: function() {
+                    return 'A ' + this.color + ' ' + this.desc + '.';
+                  }
+                };
+                 
+                var car2 = Object.create(Car2.prototype, {
+                  //value properties
+                  color:   { writable: true,  configurable:true, value: 'red' },
+                  //concrete desc value
+                  rawDesc: { writable: false, configurable:true, value: 'Porsche boxter' },
+                  // data properties (assigned using getters and setters)
+                  desc: { 
+                    configurable:true, 
+                    get: function ()      { return this.rawDesc.toUpperCase();  },
+                    set: function (value) { this.rawDesc = value.toLowerCase(); }  
+                  }
+                }); 
+                car2.color = 'blue';
+                alert(car2.getInfo()); //displays 'A RED PORSCHE BOXTER.'
+          */
+          //http://stackoverflow.com/questions/13040684/javascript-inheritance-object-create-vs-new
         var connection = Object.create(Connection.prototype, { _streamPriorities: { value: streams }});
         var streamCount = 10;
         var oldPriority, newPriority, stream;
