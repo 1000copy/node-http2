@@ -4,19 +4,23 @@
 
 所以我选择了[node-http2](https://github.com/molnarg/node-http2)，它是一个http/2的实现。并把它作为http/2协议研究过程中的伴侣。
 
-在研究前期，我[folk](https://github.com/1000copy/node-http2)了node-http2 ，在那会儿实现的http/2 还在draft 16(第16草稿）,如今已经是h2 final了。
+在研究前期，我[folk](https://github.com/1000copy/node-http2)了node-http2 ，在那会儿实现的http/2 还在draft 16(第16草稿）,如今已经是h2 final了(这一点有些存疑，因为在最终版有些被删除的帧，比如BLOCKED ,在代码中依然还有）。
 
 node-http并非是唯一的选择(那是当然)，c，c++，java也都有，完整的列表在这里 （https://github.com/http2/http2-spec/wiki/Implementations）, 由 [Mark Nottingham](http://en.wikipedia.org/wiki/Mark_Nottingham)维护管理。
 
-选择node-http2的原因是，我希望把之前对javascript的关注，转为为采纳为工作中的一部。而刚好这个工程还有不错的测试用例，以及运行日志（logger支持），依我看，一门动态语言，本来就缺乏IDE和DEBUGGER的支持，倘若没有testcase,logger，无论是阅读理解，还是修改进步，都是非常困难的，原始的开发者也是缺少质量意识的，因此是不值得认真关注的。
+选择node-http2的原因是，我希望把之前对javascript的关注，转为采纳，让它为工作中的一部。而刚好这个工程还有不错的测试用例和运行日志（logger支持），这两点也非常符合我的胃口。一门动态语言，本来就缺乏IDE和DEBUGGER的支持，倘若在工程实施中没有采用testcase以及logger，那么无论是阅读理解，还是修改进步，都会困难重重。并可以从此看出工程的开发者是缺少质量意识的。
 
 ### 测试用例
 
 说到测试用例，node-http2采纳的是[mocha](http://mochajs.org/)，一个BDD的框架。运行起来的方式非常简单。
 
+准备（如果还没有安装mocha的话）
 ```
   $ npm install 
   $ npm install -g mocha 
+```
+日常测试
+```
   $ mocha
 ```
 

@@ -49,6 +49,7 @@ describe('flow.js', function() {
         expect(flow.read()).to.equal(null);
       });
       it('has to be overridden by the child class, otherwise it throws', function() {
+        // 期望某个函数会抛出异常，指定函数即可，不需要调用。因此使用bind创建一个函数指针。
         expect(flow._send.bind(flow)).to.throw(Error);
       });
     });
@@ -107,6 +108,24 @@ describe('flow.js', function() {
           expect(flow.read()).to.deep.equal(expectedFragment);
           expect(dataFrame.data).to.deep.equal(buffer.slice(5));
         });
+        it('SplitAndRetry', function() {
+          var buffer = new Buffer(10);
+          var dataFrame = { type: 'DATA', flags: {}, stream: util.random(0, 100), data: buffer };
+          flow._send = util.noop;
+          flow._window = 5;
+          flow._queue = [dataFrame];
+
+          var expectedFragment = { flags: {}, type: 'DATA', stream: dataFrame.stream, data: buffer.slice(0,5) };
+          expect(flow.read()).to.deep.equal(expectedFragment);
+          expect(dataFrame.data).to.deep.equal(buffer.slice(5));
+          var f = flow.read()
+          expect(f.type).to.equal('BLOCKED')// 等着对方发 WINDOW_UDDATE
+          flow._increaseWindow(5)
+          var f = flow.read()
+          expect(f.type).to.equal('DATA')
+          expect(f.data.length).to.equal(5)
+          expect(f.data).to.deep.equal(buffer.slice(5))
+        });
       });
     });
     // Output queue vs. Flow control queue
@@ -127,7 +146,7 @@ describe('flow.js', function() {
         expect(flow._queue[1]).to.be.equal(priorityFrame);
       });
     });
-    describe('sanrex.write() method', function() {
+    describe('.write() method', function() {
       it('call with a DATA frame should trigger sending WINDOW_UPDATE if remote flow control is not' +
          'disabled', function(done) {
         flow._window = 100;
@@ -165,12 +184,14 @@ describe('flow.js', function() {
       flow1 = createFlow({ flow: 1 });
       flow2 = createFlow({ flow: 2 });
       flow1._flowControlId = flow2._flowControlId;
+      // `_send` is called when more frames should be pushed to the output buffer.
       flow1._send = flow2._send = util.noop;
       flow1._receive = flow2._receive = function(frame, callback) { callback(); };
     });
 
     describe('sending a large data stream', function() {
       it('should work as expected', function(done) {
+        // flow1 <--> flow2 双向管道，在flow1._send 生产数据，通过管道会在flow2._receive 中收到这些数据，两项比对，就知道发送是否正确。
         // Sender side
         var frameNumber = util.random(5, 8);
         var input = [];
@@ -185,7 +206,7 @@ describe('flow.js', function() {
             this.push({ type: 'DATA', flags: {}, data: buffer });
           }
         };
-        // _send 的数据来了的话，_receive会被调用
+        // _send 的数据来了的话，_receive会被调用<- 因为后面的pipe关系。
         // Receiver side
         var output = [];
         flow2._receive = function _receive(frame, callback) {
@@ -213,7 +234,66 @@ describe('flow.js', function() {
         flow1.pipe(flow2).pipe(flow1);
       });
     });
+    describe('verifyFrameSplit', function() {
+      it('比较大的Frame会被拆分', function(done) {
+        var frameNumber = 3;
+        var frameIndex = 0;
+        var frameSizes = [1000,4096,5000];
+        var input = [];        
+        var peerFrameSizes =[]
+        // 后面的pipe会引发_send的调用
+        flow1._send = function _send() {
+          if (input.length >= frameNumber) {
+            this.push({ type: 'DATA', flags: { END_STREAM: true }, data: new Buffer(0) });
+            this.push(null);
+          } else {
+            var buffer = new Buffer(frameSizes[frameIndex++]);
+            input.push(buffer);
+            this.push({ type: 'DATA', flags: {}, data: buffer });
+          }
+        };
+        // _send 的数据来了的话，_receive会被调用<- 因为后面的pipe关系。
+        // Receiver side
+        var output = [];
+        flow2._receive = function _receive(frame, callback) {
+          if (frame.type === 'DATA') {
+            expect(frame.data.length).to.be.lte(MAX_PAYLOAD_SIZE);
+            output.push(frame.data);
+            peerFrameSizes.push(frame.data.length);
+          }
+          if (frame.flags.END_STREAM) {
+            this.emit('end_stream');            
+          }
+          callback();
+        };
 
+        // Checking results
+        flow2.on('end_stream', function() {
+          input = util.concat(input);
+          output = util.concat(output);
+
+          expect(input).to.deep.equal(output);
+          // console.log(peerFrameSizes)
+          expect(peerFrameSizes).to.deep.equal([1000,MAX_PAYLOAD_SIZE,MAX_PAYLOAD_SIZE,5000-MAX_PAYLOAD_SIZE,0]);
+          done();
+        });
+
+        // Start piping
+        flow1.pipe(flow2).pipe(flow1);
+      });
+    });
+    // Do not send WINDOW_UPDATESs except when the other side sends BLOCKED
+    /*
+
+    这是一个过期的测试用例。因为 BLOCKED 已经在draft 13 之后被删除：
+
+    http-spec
+    
+    B.4 Since draft-ietf-httpbis-http2-12
+      ......
+      Removed BLOCKED frame.
+      ......
+    */
     describe('when running out of window', function() {
       it('should send a BLOCKED frame', function(done) {
         // Sender side
@@ -231,7 +311,7 @@ describe('flow.js', function() {
         };
 
         // Receiver side
-        // Do not send WINDOW_UPDATESs except when the other side sends BLOCKED
+
         var output = [];
         flow2._restoreWindow = util.noop;
         flow2._receive = function _receive(frame, callback) {
