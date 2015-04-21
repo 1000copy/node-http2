@@ -488,8 +488,8 @@ describe('http.js', function() {
                   done();
                 });
               });
-            });
-          });
+            })
+;          });
         });
       });
     });

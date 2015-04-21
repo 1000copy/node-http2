@@ -46,7 +46,11 @@ node-http并非是唯一的选择(那是当然)，c，c++，java也都有，完�
 
 node-http2使用了[bunyan](https://github.com/trentm/node-bunyan),启用并看到bunyan的输出，只要设置一个环境变量
 
-  $set HTTP2_LOG=debug
+  set HTTP2_LOG=debug
+
+如果看到数据的往来：
+
+  set HTTP2_LOG_DATA=1
 
 代码中有不少我的标注，其中有赞赏，有愤恨，有恍然大悟，也有行走于CallStack中的艰辛。那是我的感情，和它们融为一起。
 
