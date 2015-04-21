@@ -53,3 +53,11 @@ GOAWAY同样包含一个32位的错误码（章节7），里面包含了关闭�
 
 
 终端可以在GOAWAY载体上附加透明数据（协议本身不关心的数据，随便什么都行）。额外的调试数据仅用来诊断。调试信息可以包含安全或者隐私敏感的数据。登录或者其他持续存储的数据必须有足够的保障措施，以防止未经授权的访问。
+
+
+For servers to shut down gracefully
+
+Server: “I’ve seen Stream ID 17.”
+
+Client: (Oh phew, that POST with my credit card details to purchase that plane ticket with Stream ID 19 was ignored, even if it made it to the server!)
+…. starts new TCP connection, resends 19 (as 1, probably)

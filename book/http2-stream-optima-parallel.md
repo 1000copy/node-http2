@@ -34,3 +34,19 @@ call read 表示调用者需要数据，你准备去。
 //                +--------+                                        |
 //                |                                                 |
 //                +-------------------------------------------------+
+
+Upgrading to HTTP/2
+
+https://
+ALPN TLS extension
+Client: “I prefer h2, h2-14”
+Server: “I prefer h2-14”
+They pick “h2-14” (If no agreement: http/1.1)
+Client: “PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n” + SETTINGS frame
+Server: SETTING frame.
+http://
+spec defines a way (~politics)
+Arguments against:
+doesn't work in the wild (yay proxies!)
+it's time to encrypt
+Google, Firefox, Go et al not implementing

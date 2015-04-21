@@ -8,6 +8,7 @@ var cachedUrl = '/server.js';
 
 // The callback to handle requests
 function onRequest(request, response) {
+  console.log(request.url)
   var filename = path.join(__dirname, request.url);
 
   // Serving server.js from cache. Useful for microbenchmarks.

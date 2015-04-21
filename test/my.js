@@ -105,5 +105,33 @@ describe('my.js', function() {
             expect(buffers[0]).to.deep.equal(r.slice(0,9));        
           });
       });
+     //
+     
+    //
+    describe('callNTimes', function() {
+          it('callNTimes2', function() {
+            // // callNTimes 指定 done 函数在第limit此调用后，才真的执行。有点费解。
+            function callNTimes(limit, done) {
+              if (limit === 0) {
+                done();
+              } else {
+                var i = 0;
+                return function() {
+                  i += 1;
+                  if (i === limit) {
+                    done();
+                  }
+                };
+              }
+            };
+            function inviteVIP ()         {
+              console.log("VIP abunt")
+            }
+            inviteVIP = callNTimes(3,inviteVIP);
+            inviteVIP();// 什么也不做，只是累记
+            inviteVIP();// 什么也不做，只是累记
+            inviteVIP();// 累计到3，执行原函数             
+          });
+      });
   });
 });

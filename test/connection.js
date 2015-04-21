@@ -144,7 +144,7 @@ describe('connection.js', function() {
       });
     });
     describe('sending/receiving a request', function() {
-      it('should work as expected', function(done) {
+      it('callNTimes1', function(done) {
         // Request and response data
         var request_headers = {
           ':method': 'GET',
@@ -171,16 +171,20 @@ describe('connection.js', function() {
         client_stream.end(request_data);
 
         // Waiting for answer
-        done = util.callNTimes(2, done);
+        // done被替换为新函数，新函数包装原来的done，要求调用两次后才真的执行。这样1号位，2号位两个done被调用才不会被mocha抱怨
+        //          Error: done() called multiple times
+        // done = util.callNTimes(2, done);
         client_stream.on('headers', function(headers) {
           expect(headers).to.deep.equal(response_headers);
+          // 1 号位
           done();
         });
         client_stream.on('data', function(data) {
           expect(data).to.deep.equal(response_data);
+          // 2 号位
           done();
-        });
-      });
+        })
+;      });
     });
     describe('server push', function() {
       it('should work as expected', function(done) {
@@ -242,15 +246,16 @@ describe('connection.js', function() {
         });
       });
     });
-    describe('creating two streams and then using them in reverse order', function() {
+    describe('no-expect creating two streams and then using them in reverse order', function() {
       it('should not result in non-monotonous local ID ordering', function() {
+        //  没有expect的unittest有点让人不高兴
         var s1 = c.createStream();
         var s2 = c.createStream();
         s2.headers({ ':method': 'get', ':path': '/' });
-        s1.headers({ ':method': 'get', ':path': '/' });
+        s1.headers({ ':method': 'get', ':path': '/' });        
       });
     });
-    describe('creating two promises and then using them in reverse order', function() {
+    describe('PROMISE1:creating two promises and then using them in reverse order', function() {
       // monotonous - 单调的
       it('should not result in non-monotonous local ID ordering', function(done) {
         s.on('stream', function(response) {
@@ -261,15 +266,19 @@ describe('connection.js', function() {
           response.promise(p2, { ':method': 'get', ':path': '/p2' });
           response.promise(p1, { ':method': 'get', ':path': '/p1' });
           p2.headers({ ':status': '200' });
-          p1.headers({ ':status': '200' });
+          p1.headers({ ':status': '200' });          
         });
 
         var request = c.createStream();
         request.headers({ ':method': 'get', ':path': '/' });
 
         done = util.callNTimes(2, done);
-        request.on('promise', function() {
-          done();
+        
+        request.on('promise', function(stream,headers) {
+           console.log(headers.id);
+           console.log(headers.constructor.name);
+           console.log(headers);
+           done();
         });
       });
     });

@@ -18,9 +18,10 @@ if (process.env.HTTP2_LOG) {
   exports.createLogger = function(name) {
     return require('bunyan').createLogger({
       name: name,
-      stream: logOutput,
-      level: process.env.HTTP2_LOG,
-      // level:'info',
+      // stream: logOutput,
+      stream:process.stdout,
+      // level: process.env.HTTP2_LOG,
+      level:'debug',
       serializers: require('../lib/http').serializers
     });
   };

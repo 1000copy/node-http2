@@ -25,3 +25,9 @@ RST_STREAM帧(type=0x3)允许流的异常终止。当被流的发起者发送时
 RST_STREAM 帧必须与流相关联。如果接收端收到流标示符为0x0的RST_STREAM 帧，必须作为类型为协议错误。
 
 RST_STREAM帧绝对不能在流处于“空闲”状态下发送。否则响应为协议错误
+
+
+abort a stream (HTTP request / response)
+without killing the whole TCP connection
+
+e.g. canceling a download
