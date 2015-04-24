@@ -106,7 +106,59 @@ describe('my.js', function() {
           });
       });
      //
-     
+
+  describe('strerristty', function() {
+    it('strerristty', function() {
+      console.log("VIP abunt")
+      if (process.stderr.isTTY) {
+        console.log("VIP abunt")
+        var path = require('path');                
+        var fs = require('fs');
+        var spawn = require('child_process').spawn;
+        console.log(path.dirname(require.resolve('bunyan')))
+        var bin = path.resolve(path.dirname(require.resolve('bunyan')), '..', 'bin', 'bunyan');
+
+        if(bin && fs.existsSync(bin)) {
+          console.log(bin)
+          logOutput = spawn(bin, ['-o', 'short'], {
+            stdio: [null, process.stderr, process.stderr]
+          }).stdin;
+        }
+      }
+    })
+  })
+  describe('tls', function() {
+    it('tls', function() {      
+     var fs = require('fs');
+        var path = require('path');
+        var tls = require('tls');
+        tls.createServer({
+          key: fs.readFileSync("example/localhost.key"),
+          cert: fs.readFileSync("example/localhost.crt"),
+          NPNProtocols: ['h2', 'http 1.1','http 1.0']
+        }, function(socket) {
+          console.log("s1:"+socket.npnProtocol);
+        }).listen(1111);
+        //client
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+      tls.connect({ port: 1111 }, function() {
+          // console.log(this.npnProtocol);
+      });
+      tls.connect({ port: 1111 ,NPNProtocols: ['h2'] }, function() {
+          // console.log(this.npnProtocol);        
+      });
+      tls.connect({ port: 1111, NPNProtocols: ['http 1.1'] }, function() {
+          // console.log(this.npnProtocol);          
+      });      
+      tls.connect({ port: 1111, NPNProtocols: ['http 1.0'] }, function() {
+          // console.log(this.npnProtocol);
+      });
+    })
+  })
+
+  
+
+
     //
     describe('callNTimes', function() {
           it('callNTimes2', function() {
@@ -135,3 +187,6 @@ describe('my.js', function() {
       });
   });
 });
+
+
+        
