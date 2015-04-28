@@ -158,6 +158,40 @@ describe('my.js', function() {
 
   
 
+    describe('parse', function() {
+      it('urlparse', function() {
+          var url = require('url');
+          var options = "https://localhost:8080/server.js"
+          if (typeof options === "string") {
+            options = url.parse(options);
+            expect(options.hostname).to.be.equal("localhost")
+            expect(options.port).to.be.equal("8080")
+          }   
+      });
+    });
+    // http://stackoverflow.com/questions/5055746/cloning-an-object-in-node-js
+    describe('cloneobject by util._extend', function() {
+      it('failure', function() {
+            var obj1 = {x: 5, y:5};
+            var obj2 = obj1;
+            obj2.x = 6;
+            expect(obj1.x).to.be.equal(6); 
+
+      });
+      it('itwork', function() {
+            var util = require('util');
+            var obj1 = {x: 5, y:5};
+            var obj2 = util._extend({},obj1);
+            obj2.x = 6;
+            expect(obj1.x).to.be.equal(5); 
+      });
+      it('!!', function() {
+            expect(!!false).to.be.equal(false); 
+      });
+    });
+
+    
+
 
     //
     describe('callNTimes', function() {
