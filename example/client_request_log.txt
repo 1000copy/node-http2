@@ -1,0 +1,120 @@
+/////////////////// Segment ：setting & ACK 
+
+[2015-04-29T06:40:23.962Z] DEBUG: client/endpoint/3772 on lcj-PC: Sending the client connection header prelude. (e=0)
+[2015-04-29T06:40:23.965Z] DEBUG: client/connection/3772 on lcj-PC: Sending the first SETTINGS frame as part of the connection header. (e=0)
+[2015-04-29T06:40:23.966Z] DEBUG: client/connection/3772 on lcj-PC: Enqueueing outgoing frame (e=0)
+    frame: {
+      "id": 0,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-04-29T06:40:23.968Z]  INFO: client/http/3772 on lcj-PC: New outgoing HTTP/2 connection (e=0, server=localhost:8080)
+[2015-04-29T06:40:23.969Z]  INFO: client/http/3772 on lcj-PC: Sending request (e=0, s=0, scheme=https, method=GET, authority=localhost, path=/server.js, headers={})
+[2015-04-29T06:40:23.969Z] DEBUG: client/stream/3772 on lcj-PC: Enqueueing outgoing frame (e=0, s=0)
+    frame: {
+      "id": 1,
+      "type": "HEADERS",
+      "flags": [],
+      "headers": {
+        ":scheme": "https",
+        ":method": "GET",
+        ":authority": "localhost",
+        ":path": "/server.js"
+      }
+    }
+//// 夹杂在setting内的一个push promise ----------------------
+
+[2015-04-29T06:40:23.970Z] DEBUG: client/stream/3772 on lcj-PC: Receiving pushed resource: /client.js -> C:\Users\lcj\Documents\GitHub\node-http2\example\push-0
+State transition (e=0, s=0, from=IDLE, to=OPEN)
+[2015-04-29T06:40:23.970Z] DEBUG: client/stream/3772 on lcj-PC: Marking last frame with END_STREAM flag. (e=0, s=0, frame=1)
+[2015-04-29T06:40:23.970Z] DEBUG: client/stream/3772 on lcj-PC: State transition (e=0, s=0, from=OPEN, to=HALF_CLOSED_LOCAL)
+[2015-04-29T06:40:23.973Z] DEBUG: client/connection/3772 on lcj-PC: Enqueueing outgoing frame (e=0, frame=1)
+[2015-04-29T06:40:23.978Z] DEBUG: client/connection/3772 on lcj-PC: Receiving the first SETTINGS frame as part of the connection header. (e=0)
+[2015-04-29T06:40:23.978Z] DEBUG: client/connection/3772 on lcj-PC: Receiving connection level frame (e=0)
+    frame: {
+      "id": 2,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-04-29T06:40:23.978Z] DEBUG: client/connection/3772 on lcj-PC: Enqueueing outgoing frame (e=0)
+    frame: {
+      "id": 3,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-04-29T06:40:23.979Z] DEBUG: client/connection/3772 on lcj-PC: Receiving connection level frame (e=0)
+    frame: {
+      "id": 4,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+///////////////////END Segment ：setting & ACK 
+
+[2015-04-29T06:40:23.994Z] DEBUG: client/connection/3772 on lcj-PC: New incoming stream. (e=0, stream_id=2)
+[2015-04-29T06:40:23.995Z] DEBUG: client/stream/3772 on lcj-PC: Receiving frame (e=0, s=0)
+    frame: {
+      "id": 5,
+      "type": "PUSH_PROMISE",
+      "flags": [
+        "END_PUSH_PROMISE"
+      ],
+      "stream": 1,
+      "promised_stream": "stream-2",
+      "headers": {
+        ":method": "GET",
+        ":scheme": "https",
+        ":authority": "localhost",
+        ":path": "/client.js"
+      },
+      "data": "82874186a0e41d139d094487609418b5257e88",
+      "length": 19
+    }
+[2015-04-29T06:40:23.995Z] DEBUG: client/stream/3772 on lcj-PC: State transition (e=0, s=1, from=IDLE, to=RESERVED_REMOTE)
+[2015-04-29T06:40:23.996Z]  INFO: client/http/3772 on lcj-PC: Receiving push promise (e=0, s=0, push_stream=2)
+[2015-04-29T06:40:23.997Z]  INFO: client/http/3772 on lcj-PC: Incoming request (e=0, s=1, method=GET, scheme=https, host=localhost, path=/client.js)
+    headers: {
+      "host": "localhost"
+    }
+[2015-04-29T06:40:24.005Z] DEBUG: client/stream/3772 on lcj-PC: Receiving frame (e=0, s=0)
+    frame: {
+      "id": 6,
+      "type": "HEADERS",
+      "flags": [
+        "END_HEADERS"
+      ],
+      "stream": 1,
+      "headers": {
+        ":status": "200",
+        "date": "Wed, 29 Apr 2015 06:40:23 GMT"
+      },
+      "data": "886196e4593e9413ea435d8a08016d403971a05c132a62d1bf",
+      "length": 25
+    }
+[2015-04-29T06:40:24.005Z]  INFO: client/http/3772 on lcj-PC: Incoming response (e=0, s=0, status=200)
+    headers: {
+      "date": "Wed, 29 Apr 2015 06:40:23 GMT"
+    }
+[2015-04-29T06:40:24.006Z] DEBUG: client/stream/3772 on lcj-PC: Receiving frame (e=0, s=0)
+    frame: {
+      "id": 7,
+      "type": "DATA",
+      "flags": [
+        "END_STREAM"
+      ],
+      "stream": 1,
+      "data": "766172206673203d20726571756972652827667327293b0d0a7661722070617468203d207265717569726528277061...",
+      "length": 1823
+    }
+[2015-04-29T06:40:24.006Z] DEBUG: client/stream/3772 on lcj-PC: State transition (e=0, s=0, from=HALF_CLOSED_LOCAL, to=CLOSED)
