@@ -14,7 +14,7 @@ describe('endpoint.js', function() {
     describe('connection setup', function() {
       it('should work as expected', function(done) {
         var c = new Endpoint(util.log.child({ role: 'client' }), 'CLIENT', settings);
-        var s = new Endpoint(util.log.child({ role: 'client' }), 'SERVER', settings);
+        var s = new Endpoint(util.log.child({ role: 'server' }), 'SERVER', settings);
 
         util.log.debug('Test initialization over, starting piping.');
         c.pipe(s).pipe(c);
@@ -30,11 +30,15 @@ describe('endpoint.js', function() {
   describe('template12', function() {      
     it('1', function() {
         var c = new Endpoint(util.log.child({ role: 'client' }), 'CLIENT', settings);
-        var s = new Endpoint(util.log.child({ role: 'client' }), 'SERVER', settings);
+        var s = new Endpoint(util.log.child({ role: 'server' }), 'SERVER', settings);
 
-        util.log.debug(c._connection);
-        c._connection.on('RECEIVING_SETTINGS_INITIAL_WINDOW_SIZE',function(a){console.log("RECEIVING_SETTINGS_INITIAL_WINDOW_SIZE:"+a)})
-        console.log(c._connection._events)
+        // util.log.debug(c._connection);
+        c._connection.on('RECEIVING_SETTINGS_INITIAL_WINDOW_SIZE',function listener(a){
+            expect(a).to.equal(settings.SETTINGS_INITIAL_WINDOW_SIZE);
+            // expect(c._connection._events.RECEIVING_SETTINGS_INITIAL_WINDOW_SIZE.length).to.equal(1);
+          }
+        )
+        // console.log(c._connection._events)
         c.pipe(s).pipe(c);
 
         setTimeout(function() {

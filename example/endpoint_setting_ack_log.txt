@@ -1,0 +1,94 @@
+实际上，收到ack，两个endpoint都是不理不睬啊 ！
+
+Client: Sending  prelude.
+Client: Sending SETTINGS 
+    1. settings: {
+      "SETTINGS_MAX_CONCURRENT_STREAMS": 100,
+      "SETTINGS_INITIAL_WINDOW_SIZE": 100000
+    }
+    
+    2. frame: {
+      "id": 0,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {
+        "SETTINGS_MAX_CONCURRENT_STREAMS": 100,
+        "SETTINGS_INITIAL_WINDOW_SIZE": 100000
+      }
+    }
+Server: Sending  SETTINGS
+    1. settings: {
+      "SETTINGS_MAX_CONCURRENT_STREAMS": 100,
+      "SETTINGS_INITIAL_WINDOW_SIZE": 100000
+    }
+ 
+    2. frame: {
+      "id": 1,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {
+        "SETTINGS_MAX_CONCURRENT_STREAMS": 100,
+        "SETTINGS_INITIAL_WINDOW_SIZE": 100000
+      }
+    }
+      √ 1
+Server:received prelude. 
+Client:Receiving Setting
+    frame: {
+      "id": 2,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {
+        "SETTINGS_MAX_CONCURRENT_STREAMS": 100,
+        "SETTINGS_INITIAL_WINDOW_SIZE": 100000
+      }
+    }
+Client:ACK Setting Frame
+    frame: {
+      "id": 3,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+   Client: Changing stream initial window size
+Server: Receiving  SETTINGS 
+    frame: {
+      "id": 4,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {
+        "SETTINGS_MAX_CONCURRENT_STREAMS": 100,
+        "SETTINGS_INITIAL_WINDOW_SIZE": 100000
+      }
+    }
+Server:ACK Settings
+    frame: {
+      "id": 5,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+    Server :Changing stream initial window size. 
+Server:Accepted ACK
+    frame: {
+      "id": 6,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+
+
+ 
