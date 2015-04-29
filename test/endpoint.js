@@ -26,6 +26,33 @@ describe('endpoint.js', function() {
       });
     });
   });
+  //
+  describe('template12', function() {      
+    it('1', function() {
+        var c = new Endpoint(util.log.child({ role: 'client' }), 'CLIENT', settings);
+        var s = new Endpoint(util.log.child({ role: 'client' }), 'SERVER', settings);
+
+        util.log.debug(c._connection);
+        c._connection.on('RECEIVING_SETTINGS_INITIAL_WINDOW_SIZE',function(a){console.log("RECEIVING_SETTINGS_INITIAL_WINDOW_SIZE:"+a)})
+        console.log(c._connection._events)
+        c.pipe(s).pipe(c);
+
+        setTimeout(function() {
+          // If there are no exception until this, then we're done
+          done();
+        }, 10);
+    });
+    
+  });
+  //
+  describe('template', function() {      
+    it('1', function() {
+        _connection
+        expect(1).to.equal(1);
+    });
+    
+  });
+  //
   describe('bunyan serializer', function() {
     describe('`e`', function() {
       var format = endpoint.serializers.e;
@@ -39,3 +66,5 @@ describe('endpoint.js', function() {
     });
   });
 });
+
+
