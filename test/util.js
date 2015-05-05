@@ -22,6 +22,7 @@ if (process.env.HTTP2_LOG) {
       stream:process.stdout,
       // level: process.env.HTTP2_LOG,
       level:'debug',
+      // src:true,// 打印源代码位置
       serializers: require('../lib/http').serializers
     });
   };

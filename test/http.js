@@ -131,7 +131,7 @@ describe('http.js', function() {
     });
   });
   describe('test scenario', function() {
-    describe('simple request', function() {
+    describe('simplerequest', function() {
       it('should work as expected', function(done) {
         var path = '/x';
         var message = 'Hello world';

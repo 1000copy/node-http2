@@ -1,0 +1,212 @@
+
+
+  http.js
+    test scenario
+      simplerequest
+[2015-05-05T09:11:36.804Z]  INFO: server/http/2320 on lcj-PC: Creating HTTP/2 server over TLS
+[2015-05-05T09:11:37.060Z]  INFO: server/http/2320 on lcj-PC: Listening on https (on=1234)
+[2015-05-05T09:11:37.065Z]  INFO: client/http/2320 on lcj-PC: negotiating protocol with https(not http2)
+[2015-05-05T09:11:37.081Z] DEBUG: server/connection/2320 on lcj-PC: Sending the first SETTINGS frame (e=0)
+[2015-05-05T09:11:37.081Z] DEBUG: server/connection/2320 on lcj-PC: Enqueueing outgoing frame (e=0)
+    frame: {
+      "id": 0,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-05-05T09:11:37.082Z]  INFO: server/http/2320 on lcj-PC: Negotiated ,then cons server endpoint (e=0, client=127.0.0.1:11663, SNI=localhost)
+[2015-05-05T09:11:37.085Z]  INFO: client/http/2320 on lcj-PC: negotiated
+[2015-05-05T09:11:37.085Z] DEBUG: client/endpoint/2320 on lcj-PC: Sending the client connection header prelude. (e=1)
+[2015-05-05T09:11:37.087Z] DEBUG: client/connection/2320 on lcj-PC: Sending the first SETTINGS frame (e=1)
+[2015-05-05T09:11:37.087Z] DEBUG: client/connection/2320 on lcj-PC: Enqueueing outgoing frame (e=1)
+    frame: {
+      "id": 1,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-05-05T09:11:37.087Z]  INFO: client/http/2320 on lcj-PC: New outgoing endpoint (e=1, server=localhost:1234)
+[2015-05-05T09:11:37.088Z]  INFO: client/http/2320 on lcj-PC: Sending request (e=1, s=2, scheme=https, method=GET, authority=localhost, path=/x, headers={})
+[2015-05-05T09:11:37.088Z] DEBUG: client/stream/2320 on lcj-PC: Enqueueing outgoing frame (e=1, s=2)
+    frame: {
+      "id": 2,
+      "type": "HEADERS",
+      "flags": [],
+      "headers": {
+        ":scheme": "https",
+        ":method": "GET",
+        ":authority": "localhost",
+        ":path": "/x"
+      }
+    }
+[2015-05-05T09:11:37.097Z] DEBUG: client/stream/2320 on lcj-PC: State transition (e=1, s=2, from=IDLE, to=OPEN)
+[2015-05-05T09:11:37.098Z] DEBUG: client/stream/2320 on lcj-PC: Marking last frame with END_STREAM flag. (e=1, s=2, frame=2)
+[2015-05-05T09:11:37.098Z] DEBUG: client/stream/2320 on lcj-PC: State transition (e=1, s=2, from=OPEN, to=HALF_CLOSED_LOCAL)
+[2015-05-05T09:11:37.100Z] DEBUG: client/connection/2320 on lcj-PC: Receiving the first SETTINGS frame  (e=1)
+[2015-05-05T09:11:37.100Z] DEBUG: client/connection/2320 on lcj-PC: Receiving connection level frame (e=1)
+    frame: {
+      "id": 3,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-05-05T09:11:37.101Z] DEBUG: client/connection/2320 on lcj-PC: Enqueueing outgoing frame (e=1)
+    frame: {
+      "id": 4,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-05-05T09:11:37.101Z] DEBUG: client/connection/2320 on lcj-PC: Enqueueing outgoing frame (e=1, frame=2)
+[2015-05-05T09:11:37.104Z] DEBUG: server/endpoint/2320 on lcj-PC: Successfully received the client connection header prelude. (e=0)
+[2015-05-05T09:11:37.104Z] DEBUG: server/connection/2320 on lcj-PC: Receiving the first SETTINGS frame  (e=0)
+[2015-05-05T09:11:37.105Z] DEBUG: server/connection/2320 on lcj-PC: Receiving connection level frame (e=0)
+    frame: {
+      "id": 5,
+      "type": "SETTINGS",
+      "flags": [],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-05-05T09:11:37.105Z] DEBUG: server/connection/2320 on lcj-PC: Enqueueing outgoing frame (e=0)
+    frame: {
+      "id": 6,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-05-05T09:11:37.105Z] DEBUG: server/connection/2320 on lcj-PC: Receiving connection level frame (e=0)
+    frame: {
+      "id": 7,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-05-05T09:11:37.106Z] DEBUG: server/connection/2320 on lcj-PC: New incoming stream. (e=0, stream_id=1)
+[2015-05-05T09:11:37.107Z] DEBUG: server/stream/2320 on lcj-PC: Receiving frame (e=0, s=3)
+    frame: {
+      "id": 8,
+      "type": "HEADERS",
+      "flags": [
+        "END_STREAM",
+        "END_HEADERS"
+      ],
+      "stream": 1,
+      "headers": {
+        ":scheme": "https",
+        ":method": "GET",
+        ":authority": "localhost",
+        ":path": "/x"
+      },
+      "data": "87824186a0e41d139d0944022f78",
+      "length": 14
+    }
+[2015-05-05T09:11:37.107Z] DEBUG: server/stream/2320 on lcj-PC: State transition (e=0, s=3, from=IDLE, to=OPEN)
+[2015-05-05T09:11:37.107Z] DEBUG: server/stream/2320 on lcj-PC: State transition (e=0, s=3, from=OPEN, to=HALF_CLOSED_REMOTE)
+[2015-05-05T09:11:37.107Z]  INFO: server/http/2320 on lcj-PC: Incoming request (e=0, s=3, method=GET, scheme=https, host=localhost, path=/x)
+    headers: {
+      "host": "localhost"
+    }
+[2015-05-05T09:11:37.108Z]  INFO: server/http/2320 on lcj-PC: Sending server response (e=0, s=3, status=200)
+    headers: {
+      "date": "Tue, 05 May 2015 09:11:37 GMT"
+    }
+[2015-05-05T09:11:37.108Z] DEBUG: server/stream/2320 on lcj-PC: Enqueueing outgoing frame (e=0, s=3)
+    frame: {
+      "id": 9,
+      "type": "HEADERS",
+      "flags": [],
+      "stream": 1,
+      "headers": {
+        "date": "Tue, 05 May 2015 09:11:37 GMT",
+        ":status": 200
+      }
+    }
+[2015-05-05T09:11:37.109Z] DEBUG: server/stream/2320 on lcj-PC: Enqueueing outgoing frame (e=0, s=3)
+    frame: {
+      "id": 10,
+      "type": "DATA",
+      "flags": [],
+      "stream": 1,
+      "data": "48656c6c6f20776f726c64",
+      "length": 11
+    }
+[2015-05-05T09:11:37.109Z] DEBUG: server/stream/2320 on lcj-PC: Marking last frame with END_STREAM flag. (e=0, s=3, frame=10)
+[2015-05-05T09:11:37.109Z] DEBUG: server/stream/2320 on lcj-PC: State transition (e=0, s=3, from=HALF_CLOSED_REMOTE, to=CLOSED)
+[2015-05-05T09:11:37.110Z] DEBUG: client/connection/2320 on lcj-PC: Receiving connection level frame (e=1)
+    frame: {
+      "id": 11,
+      "type": "SETTINGS",
+      "flags": [
+        "ACK"
+      ],
+      "stream": 0,
+      "settings": {}
+    }
+[2015-05-05T09:11:37.110Z] DEBUG: server/connection/2320 on lcj-PC: Enqueueing outgoing frame (e=0, frame=9)
+[2015-05-05T09:11:37.110Z] DEBUG: server/connection/2320 on lcj-PC: Enqueueing outgoing frame (e=0, frame=10)
+[2015-05-05T09:11:37.113Z] DEBUG: client/stream/2320 on lcj-PC: Receiving frame (e=1, s=2)
+    frame: {
+      "id": 12,
+      "type": "HEADERS",
+      "flags": [
+        "END_HEADERS"
+      ],
+      "stream": 1,
+      "headers": {
+        ":status": "200",
+        "date": "Tue, 05 May 2015 09:11:37 GMT"
+      },
+      "data": "886196df697e94036a681fa50400b6a01fb810dc65d53168df",
+      "length": 25
+    }
+[2015-05-05T09:11:37.113Z]  INFO: client/http/2320 on lcj-PC: Incoming response (e=1, s=2, status=200)
+    headers: {
+      "date": "Tue, 05 May 2015 09:11:37 GMT"
+    }
+[2015-05-05T09:11:37.113Z] DEBUG: client/stream/2320 on lcj-PC: Receiving frame (e=1, s=2)
+    frame: {
+      "id": 13,
+      "type": "DATA",
+      "flags": [
+        "END_STREAM"
+      ],
+      "stream": 1,
+      "data": "48656c6c6f20776f726c64",
+      "length": 11
+    }
+[2015-05-05T09:11:37.114Z]  INFO: server/http/2320 on lcj-PC: Closing server
+        √ should work as expected (311ms)
+[2015-05-05T09:11:37.115Z] DEBUG: client/stream/2320 on lcj-PC: State transition (e=1, s=2, from=HALF_CLOSED_LOCAL, to=CLOSED)
+[2015-05-05T09:11:37.115Z] DEBUG: client/connection/2320 on lcj-PC: Enqueueing outgoing frame (e=1)
+    frame: {
+      "id": 14,
+      "type": "WINDOW_UPDATE",
+      "flags": [],
+      "stream": 0,
+      "window_size": 11
+    }
+[2015-05-05T09:11:37.118Z] DEBUG: server/connection/2320 on lcj-PC: Receiving connection level frame (e=0)
+    frame: {
+      "id": 15,
+      "type": "WINDOW_UPDATE",
+      "flags": [],
+      "stream": 0,
+      "window_size": 11
+    }
+
+
+  1 passing (320ms)
+
