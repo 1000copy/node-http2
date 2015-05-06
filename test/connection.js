@@ -41,6 +41,79 @@ describe('connection.js', function() {
         expectPriorityOrder(connection._streamPriorities);
       });
     });
+     describe('nontrial priority', function() {
+      it('should eject and then insert the stream in _streamPriorities in a place determined by stream._priority', function() {
+        var streams = [];        
+        var connection = Object.create(Connection.prototype, { _streamPriorities: { value: streams }});
+        var streamCount = 8;
+        var oldPriority, newPriority, stream;
+        var prioritys = [1,2,3,1,2,3,3,2];
+        for (var i = 0; i < streamCount-1; i++) {
+          newPriority = prioritys[(i+1)]
+          oldPriority = prioritys[i]
+          stream = { _priority: oldPriority};
+          connection._insert(stream, oldPriority);
+          // console.log("connection._streamPriorities:")
+          // console.log(connection._streamPriorities)
+          
+          // stream._priority = newPriority;
+
+          // expect(connection._streamPriorities[newPriority]).to.include(stream);
+          // expect(connection._streamPriorities[oldPriority] || []).to.not.include(stream);
+        }
+        expectPriorityOrder(streams);
+        console.log(connection._streamPriorities)
+        /*
+          [ ,
+            [ { _priority: 1 }, { _priority: 1 } ],
+            [ { _priority: 2 }, { _priority: 2 } ],
+            [ { _priority: 3 }, { _priority: 3 }, { _priority: 3 } ] 
+          ]
+        */
+      });
+    });
+    describe('nontrial1 priority', function() {
+      it('should eject and then insert the stream in _streamPriorities in a place determined by stream._priority', function() {
+        var streams = [];        
+        var connection = Object.create(Connection.prototype, { _streamPriorities: { value: streams }});
+        // var streamCount = 7;
+        var oldPriority, newPriority, stream;
+        var prioritys = [1,2,3,1,2,3,3];
+        for (var i = 0; i < prioritys.length; i++) {
+          oldPriority = prioritys[i]
+          stream = { _priority: oldPriority};
+          connection._insert(stream, oldPriority);        
+        }
+        /* FROM 
+          [ ,
+            [ { _priority: 1 }, { _priority: 1 } ],
+            [ { _priority: 2 }, { _priority: 2 } ],
+            [ { _priority: 3 }, { _priority: 3 }, { _priority: 3 } ] 
+          ]
+        */
+        expect(connection._streamPriorities[1].length ).to.equal(2)
+        expect(connection._streamPriorities[3].length ).to.equal(3)
+        // 把最后一个流（优先级为3）重设为1 
+        newPriority = 1
+        connection._reprioritize(stream,newPriority)
+        stream._priority = newPriority
+        // console.log(connection._streamPriorities)        
+        expect(connection._streamPriorities[1].length ).to.equal(3)
+        expect(connection._streamPriorities[3].length ).to.equal(2)
+        /* CONVERT TO 
+          [ ,
+            [ { _priority: 1 }, { _priority: 1 } ], //Bucket Named
+            [ { _priority: 2 }, { _priority: 2 } ],
+            [ { _priority: 3 }, { _priority: 3 }] 
+          ]
+        */ 
+        // _streamPriorities 是一个大数组，以priority为下表。就是说，如果priority最大为100，那么数组的长度就是101（还有一个0，数组从0开始）
+        newPriority = 100
+        connection._reprioritize(stream,newPriority)
+        stream._priority = newPriority
+        expect(connection._streamPriorities.length).to.equal(101)
+      });
+    });
     describe('method ._reprioritize(stream)', function() {
       it('should eject and then insert the stream in _streamPriorities in a place determined by stream._priority', function() {
         var streams = [];
@@ -112,7 +185,7 @@ describe('connection.js', function() {
     var c, s;
     beforeEach(function() {
       c = new Connection(util.log.child({ role: 'client' }), 1, settings);
-      s = new Connection(util.log.child({ role: 'client' }), 2, settings);
+      s = new Connection(util.log.child({ role: 'server' }), 2, settings);
       // 双向管道：c发的，直接到s，反过来也是。
       // 两个connection的流直接连接起来，不必搞什么网络通信即可测试。
       // 至此，这里无需看到 server.listen(1234, function() {}) 之类的网络侦听和连接发起的代码
@@ -143,8 +216,10 @@ describe('connection.js', function() {
         }, 10);
       });
     });
-    describe('sending/receiving a request', function() {
+    // 1000copy eye on here 
+    describe('connection_pipe_request', function() {
       it('callNTimes1', function(done) {
+        done = util.callNTimes(2, done);
         // Request and response data
         var request_headers = {
           ':method': 'GET',
@@ -158,6 +233,8 @@ describe('connection.js', function() {
 
         // Setting up server
         s.on('stream', function(server_stream) {
+          
+          console.log(new Error().stack)
           server_stream.on('headers', function(headers) {
             expect(headers).to.deep.equal(request_headers);
             server_stream.headers(response_headers);
