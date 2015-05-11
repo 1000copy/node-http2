@@ -1,6 +1,12 @@
 http/2 协议刚刚发布不久，http1.1的服务器和客户端依然大量存在，新老协议必定长期共存一段时间。这样，浏览器和服务器就需要协商使用何种协议进行通讯。
 
-主流的方法，是通过 ALPN或者 NPN 协议，协商（而不是我们熟悉的平文本）出两者共同支持的协议。Node 已经在tls模块内实现了NPN支持。只要创建tls服务器(createServer)，在options参数内传递服务器支持的协议清单NPNProtocols，在客户端连接（connect)传递NPNProtocols，这样建立连接后，就可以在socket.npnProtocol内得到协商的结果。
+主流的方法是使用ALPN或者NPN来做协商。
+
+Next Protocol Negotiation (NPN)是一个使SPDY在TLS服务器上对使用何种应用层协议进行协商的协议。IETF（h2的标准化组织）拿到这个，肯定要改改，然后盖个章，把它变成标准。名字也改了叫ALPN（Application Layer Protocol Negotiation）。
+
+区别是有的。就在于谁持有会话协议的决定权。ALPN是由客户端给服务器发送一个协议清单，由服务器来最终选择一个。而NPN则正好相反。
+
+Node 已经在tls模块内实现了NPN支持。只要创建tls服务器(createServer)，在options参数内传递服务器支持的协议清单NPNProtocols，在客户端连接（connect)传递NPNProtocols，这样建立连接后，就可以在socket.npnProtocol内得到协商的结果。
 
 参考 ：
 
