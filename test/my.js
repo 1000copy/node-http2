@@ -127,8 +127,39 @@ describe('my.js', function() {
       }
     })
   })
+  // apln
+  
   describe('tls', function() {
-    it('tls', function() {      
+    it('alpn', function() {      
+     var fs = require('fs');
+        var path = require('path');
+        var tls = require('tls');
+        tls.createServer({
+          key: fs.readFileSync("example/localhost.key"),
+          cert: fs.readFileSync("example/localhost.crt"),
+          ALPNProtocols: ['h2', 'http 1.1','http 1.0']
+        }, function(socket) {
+          console.log("s1:"+socket.npnProtocol);
+        }).listen(1111);
+        //client
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+      tls.connect({ port: 1111 }, function() {
+          // console.log(this.npnProtocol);
+      });
+      tls.connect({ port: 1111 ,ALPNProtocols: ['h2'] }, function() {
+          // console.log(this.npnProtocol);        
+      });
+      tls.connect({ port: 1111, ALPNProtocols: ['http 1.1'] }, function() {
+          // console.log(this.npnProtocol);          
+      });      
+      tls.connect({ port: 1111, ALPNProtocols: ['http 1.0'] }, function() {
+          // console.log(this.npnProtocol);
+      });
+    })
+  })
+  // https://github.com/joyent/node/issues/6168
+  describe('tls', function() {
+    it('npn', function() {      
      var fs = require('fs');
         var path = require('path');
         var tls = require('tls');
