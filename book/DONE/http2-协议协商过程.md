@@ -10,8 +10,8 @@ Node 已经在tls模块内实现了NPN支持。只要创建tls服务器(createSe
 
 参考 ：
 
-     node: tls.connect(port[, host][, options][, callback])
-     node: tls.createServer(options[, secureConnectionListener])
+     node: [tls.connect](https://nodejs.org/api/tls.html#tls_tls_connect_options_callback)
+     node: [tls.createServer](https://nodejs.org/api/tls.html#tls_tls_createserver_options_secureconnectionlistener)
 词条对两个函数的说明。
 
 请看mocha测试用例：
