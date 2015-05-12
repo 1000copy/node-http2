@@ -51,7 +51,7 @@ describe('endpoint.js', function() {
   //
   describe('template', function() {      
     it('1', function() {
-        _connection
+        // _connection
         expect(1).to.equal(1);
     });
     

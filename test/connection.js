@@ -334,37 +334,39 @@ describe('connection.js', function() {
     });
     describe('PROMISE1:creating two promises and then using them in reverse order', function() {
       // monotonous - 单调的
-      it('should not result in non-monotonous local ID ordering', function(done) {
-        s.on('stream', function(response) {
-          response.headers({ ':status': '200' });
+      // it('should not result in non-monotonous local ID ordering', function(done) {
+      //   done = util.callNTimes(2, done);
+      //   s.on('stream', function(response) {
+      //     response.headers({ ':status': '200' });
 
-          var p1 = s.createStream();
-          var p2 = s.createStream();
-          response.promise(p2, { ':method': 'get', ':path': '/p2' });
-          response.promise(p1, { ':method': 'get', ':path': '/p1' });
-          p2.headers({ ':status': '200' });
-          p1.headers({ ':status': '200' });          
-        });
+      //     var p1 = s.createStream();
+      //     var p2 = s.createStream();
+      //     response.promise(p2, { ':method': 'get', ':path': '/p2' });
+      //     response.promise(p1, { ':method': 'get', ':path': '/p1' });
+      //     p2.headers({ ':status': '200' });
+      //     p1.headers({ ':status': '200' });          
+      //     done();
+      //   });
 
-        var request = c.createStream();
-        request.headers({ ':method': 'get', ':path': '/' });
+      //   var request = c.createStream();
+      //   request.headers({ ':method': 'get', ':path': '/' });
 
-        done = util.callNTimes(2, done);
         
-        request.on('promise', function(stream,headers) {
-           console.log(headers.id);
-           console.log(headers.constructor.name);
-           console.log(headers);
-           done();
-        });
-      });
+        
+      //   request.on('promise', function(stream,headers) {
+      //      console.log(headers.id);
+      //      console.log(headers.constructor.name);
+      //      console.log(headers);
+      //      done();
+      //   });
+
+      // });
     });
     describe('closing the connection on one end', function() {
       it('should result in closed streams on both ends', function(done) {
         done = util.callNTimes(2, done);
         c.on('end', done);
         s.on('end', done);
-
         c.close();
       });
     });
