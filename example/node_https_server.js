@@ -6,7 +6,7 @@ var options = {
   cert: fs.readFileSync('example/localhost.crt')
 };
 // var supportedProtocols = ['http/1.1', 'http/1.0'];
-var supportedProtocols = ["h2", 'http/1.1', 'http/1.0'];
+var supportedProtocols = ["h2", "h2-14",'http/1.1', 'http/1.0'];
 // var supportedProtocols = ['http/1.0'];
 options.ALPNProtocols = supportedProtocols;
 options.NPNProtocols = supportedProtocols;
@@ -27,8 +27,8 @@ var _server = https.createServer(options, function (req, res) {
 //       console.log('socket.authorizationError:'+socket.authorizationError);
 //     });
 _server.on('secureConnection', function(socket) {
-      console.log('Protocol:'+socket.npnProtocol);      
-    });
+   console.log('Protocol:'+socket.npnProtocol);      
+});
 
 //URL https://localhost:8001
 //  is  a https server 
