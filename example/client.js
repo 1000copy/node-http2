@@ -21,6 +21,7 @@ request.on('response', function(response) {
 });
 
 // Receiving push streams
+//                        ->IncomingPromise
 request.on('push', function(pushRequest) {
   var filename = path.join(__dirname, '/push-' + push_count);
   push_count += 1;

@@ -117,16 +117,18 @@ describe('http.js', function() {
   describe('OutgoingResponse', function() {
     it('should throw error when writeHead is called multiple times on it', function() {
       var called = false;
-      var stream = { _log: util.log, headers: function () {
+      var stream = { _log: util.log, headers: function () {        
         if (called) {
+          // console.log('Should not send headers twice')
           throw new Error('Should not send headers twice');
         } else {
+          // console.log('Should not send headers twice1')
           called = true;
         }
       }, once: util.noop };
       var response = new http2.OutgoingResponse(stream);
 
-      response.writeHead(200);
+      response.writeHead(200);      
       response.writeHead(404);
     });
   });
@@ -366,7 +368,9 @@ describe('http.js', function() {
         });
       });
     });
-    describe('request to an HTTPS/1 server', function() {
+    // set HTTP2_LOG=debug
+    // mocha -g fallbackhttp1 |bunyan
+    describe('fallbackhttp1:request to an HTTPS/1 server', function() {
       it('should fall back to HTTPS/1 successfully', function(done) {
         var path = '/x';
         var message = 'Hello world';
@@ -377,11 +381,13 @@ describe('http.js', function() {
         });
 
         server.listen(5678, function() {
-          http2.get('https://localhost:5678' + path, function(response) {
+          var req = http2.get('https://localhost:5678' + path, function(response) {
             response.on('data', function(data) {
               expect(data.toString()).to.equal(message);
+              expect(req.protocol_version).to.equal("http/1.1")              
               done();
             });
+
           });
         });
       });
@@ -394,7 +400,7 @@ describe('http.js', function() {
           server.close();
           originalDone();
         });
-
+        // https.createServer ! not http2.createServer ,so server is https 1.x
         var server = https.createServer(options, function(request, response) {
           expect(request.url).to.equal(path);
           response.end(message);
@@ -416,7 +422,7 @@ describe('http.js', function() {
         });
       });
     });
-    describe('HTTPS/1 request to a HTTP/2 server', function() {
+    describe('fallback2:HTTPS/1 request to a HTTP/2 server', function() {
       it('should fall back to HTTPS/1 successfully', function(done) {
         var path = '/x';
         var message = 'Hello world';
@@ -424,24 +430,29 @@ describe('http.js', function() {
         var server = http2.createServer(options, function(request, response) {
           expect(request.url).to.equal(path);
           response.end(message);
+          console.log(server.endpoints)
         });
 
         server.listen(1236, function() {
+          // https.get ! not http2.get 
           https.get('https://localhost:1236' + path, function(response) {
             response.on('data', function(data) {
               expect(data.toString()).to.equal(message);
+
               done();
             });
           });
         });
       });
     });
-    describe('two parallel request', function() {
+    describe('req1:two parallel request', function() {
       it('should work as expected', function(done) {
         var path = '/x';
         var message = 'Hello world';
 
-        var server = http2.createServer(options, function(request, response) {
+        var server = http2.createServer(options, function(request, response) {          
+          expect(server.endpoints.length).to.equal(2);
+          // expect(typeof server.endpoints[0].socket).to.equal(2);
           expect(request.url).to.equal(path);
           response.end(message);
         });
@@ -452,6 +463,7 @@ describe('http.js', function() {
           http2.get('https://localhost:1237' + path, function(response) {
             response.on('data', function(data) {
               expect(data.toString()).to.equal(message);
+
               done();
             });
           });
@@ -568,10 +580,14 @@ describe('http.js', function() {
           /*
          
           */  
+          // 有promise的情况下，需要响应OutgoingRequest的response,response的data事件
+          // 有promise的情况下，直接http2.get(url,callback)即可
+          // request : OutgoingRequest
           var request = http2.get('https://localhost:1235' + path);
           done = util.callNTimes(5, done);
-
+          //response:IncomingResponse ->ready
           request.on('response', function(response) {
+            // IncomingResponse.data 就是stream.data event
             response.on('data', function(data) {
               expect(data.toString()).to.equal(message);
               done();
