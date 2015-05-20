@@ -403,6 +403,7 @@ describe('http.js', function() {
         // https.createServer ! not http2.createServer ,so server is https 1.x
         var server = https.createServer(options, function(request, response) {
           expect(request.url).to.equal(path);
+          // end 是node stream的方法，意味着写入流完成
           response.end(message);
         });
 
