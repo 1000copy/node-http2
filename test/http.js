@@ -675,9 +675,22 @@ describe('http.js', function() {
           Dummy.prototype.dosth = function(){
             this.emit("a",this)
           }
-          var d = new Dummy();
-          d.on("a",function(o){expect(o.constructor.name).to.equal("Dummy")})    
+          function Dummy1() {              
+              Dummy.call(this);              
+          }          
+          Dummy1.prototype = Object.create(Dummy.prototype, { constructor: { value: Dummy1 } });
+          Dummy1.prototype.dosth1 = function(){
+            this.emit("b",this)
+          }
+          var d = new Dummy1();
+          // 原来以为emit之后堆栈就乱，无法知道事件代码的上下文。实际上，可以的。console.trace会告诉我。
+          d.on("a",function(o){expect(o.constructor.name).to.equal("Dummy1");console.trace()})    
+          d.on("b",function(o){expect(o.constructor.name).to.equal("Dummy1");console.trace()})    
+          // console.log(d)
+          expect(typeof d._events.a).to.equal("function")
+          expect(typeof d._events.b).to.equal("function")          
           d.dosth();
+          d.dosth1();          
           done();
       });      
     });
