@@ -609,6 +609,47 @@ describe('http.js', function() {
         });
       });
     });
+    describe('3serverpush', function() {
+      it('should work as expected', function(done) {
+        var path = '/x';
+        var message = 'server response';
+        var pushedPath = '/y';
+        var pushedMessage = 'promise 1';        
+        var server = http2.createServer(options, function(request, response) {
+          expect(request.url).to.equal(path);
+          var push1 = response.push('/y');
+          push1.end(pushedMessage);
+          response.end(message);
+        });
+        server.listen(1235, function() {          
+          var request = http2.get('https://localhost:1235' + path);
+          done = util.callNTimes(4, done);
+          request.on('response', function(response) {
+            response.on('data', function(data) {
+              expect(data.toString()).to.equal(message);
+              done();
+            });
+            response.on('end', done);
+          });
+
+          request.on('push', function(promise) {
+            expect(promise.constructor.name).to.equal('IncomingPromise');
+            promise.on('response', function(pushStream) {
+              expect(typeof(pushStream)).to.equal('object');
+              expect(pushStream.constructor.name).to.equal('IncomingResponse');
+              expect(pushStream.headers.hasOwnProperty('date')).to.equal(true)
+              expect(pushStream.statusCode).to.equal(200)              
+              expect(pushStream.trailers).to.equal(undefined)
+              pushStream.on('data', function(data) {
+                expect(data.toString('utf8')).to.equal(pushedMessage);
+                done();
+              });
+              pushStream.on('end', done);
+            });
+          });
+        });
+      });
+    });
     // DESCRIBE
     // mocha -g new1 
     describe('new1', function() {
@@ -617,5 +658,148 @@ describe('http.js', function() {
         done();
       });
     });
+    describe('event emit by which object？', function() {
+      it('emitter1', function(done) {
+          var E = require('events').EventEmitter;
+          var e = new E;
+          e.on('a',function(){console.log('a')})
+          e.emit('a')
+          done();          
+      });
+      it('emitter2', function(done) {
+          var EventEmitter = require('events').EventEmitter;
+          function Dummy() {              
+              EventEmitter.call(this);              
+          }          
+          Dummy.prototype = Object.create(EventEmitter.prototype, { constructor: { value: Dummy } });
+          Dummy.prototype.dosth = function(){
+            this.emit("a",this)
+          }
+          var d = new Dummy();
+          d.on("a",function(o){expect(o.constructor.name).to.equal("Dummy")})    
+          d.dosth();
+          done();
+      });      
+    });
+  // mocha -g new1 
+    describe('new2', function() {
+      it('2', function(done) {
+        var Readable = require('stream').Readable;
+        var stream = new Readable();
+        // stream._read = function(){};
+        stream.push("111");
+        stream.push(null);
+        // stream._log = responseStream._log;
+        stream.pipe(process.stdout)
+        done();
+      });
+      it('_validateHeaders', function(done) {
+        var header = { ':method': 'GET',
+            ':scheme': 'https',
+            ':authority': 'localhost',
+            ':path': '/y' }
+        var Readable = require('stream').Readable;
+        var stream = new Readable();
+        // stream._read = function(){};
+        // stream.push("111");
+        stream.push(null);
+        function noop(){}
+        stream._log = {
+            fatal: noop,
+            error: noop,
+            warn : noop,
+            info : noop,
+            debug: noop,
+            trace: noop,
+
+            child: function() { return this; }
+          };
+        IncomingMessage = new http2.IncomingMessage(stream)
+        var newh = header
+        IncomingMessage._validateHeaders(newh)
+        expect(header).to.equal(newh)
+        done();
+      });
+      //  为了得到promite data,嵌套也特特么深了。push -> response -> data 也命名比较古怪，不是push->header->data更好些？
+      describe('4serverpush', function() {
+        it('push concerned only', function(done) {
+          var path = '/x';
+          var message = 'server response';
+          var pushedPath = '/y';
+          var pushedMessage = 'promise 1';        
+          var server = http2.createServer(options, function(request, response) {
+            expect(request.url).to.equal(path);
+            var push1 = response.push('/y');
+            push1.end(pushedMessage);
+            response.end(message);
+          });
+          server.listen(1235, function() {          
+            var request = http2.get('https://localhost:1235' + path);
+            expect(request.constructor.name).to.equal("OutgoingRequest")
+            done = util.callNTimes(2, done);        
+            request.on('push', function(promise) {
+              // 此处有一个取消的机会
+              expect(promise.constructor.name).to.equal('IncomingPromise');
+              promise.on('response', function(pushStream) {
+                // 先发送promise 头过来
+                expect(typeof(pushStream)).to.equal('object');
+                expect(pushStream.constructor.name).to.equal('IncomingResponse');
+                expect(pushStream.headers.hasOwnProperty('date')).to.equal(true)
+                expect(pushStream.statusCode).to.equal(200)              
+                expect(pushStream.trailers).to.equal(undefined)
+                pushStream.on('data', function(data) {
+                  // 然后才是promise 数据
+                  expect(data.toString('utf8')).to.equal(pushedMessage);
+                  done();
+                });
+                pushStream.on('end', done);
+              });
+            });
+          });
+        });
+      });
+      describe('5serverpush', function() {
+        it('push concerned only', function(done) {
+          var path = '/x';
+          var message = 'server response';
+          var pushedPath = '/y';
+          var pushedMessage = 'promise 1';        
+          var server = http2.createServer(options, function(request, response) {
+            expect(request.url).to.equal(path);
+            var push1 = response.push('/y');
+            push1.end(pushedMessage);
+            response.end(message);
+          });
+          server.listen(1235, function() {          
+            var request = http2.get('https://localhost:1235' + path);
+            expect(request.constructor.name).to.equal("OutgoingRequest")
+            // done = util.callNTimes(2, done);        
+            request.on('push', function(promise) {
+              promise.cancel();
+              promise.on('response', function(pushStream) {
+                expect(1).to.equal(0)// 不应该到这里
+                pushStream.on('data', function(data) {
+                  expect(1).to.equal(0)// 不应该到这里
+                });
+                pushStream.on('end', done);
+              });
+              done();
+            });
+          });
+        });
+      });
+      it('1', function(done) {
+        // var Readable = require('stream').Readable;
+        // var stream = new Readable();
+        // stream._read = function(){stream.push("222");stream.push(null);};
+        // stream.pipe(process.stdout)
+        done();
+      });
+    });
+
+
+
+  
+
   });
 });
