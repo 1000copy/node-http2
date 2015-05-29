@@ -35,13 +35,6 @@ describe("node stream", function () {
         finish();
       });
   });
-
-
-
-  it("transform", function (finish) {
-   
-
-  });
 }); // ArrayStream
 
 // OBJECJT CsvPrepStream

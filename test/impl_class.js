@@ -84,7 +84,7 @@ describe('impl_class.js', function() {
 	var b = new Base('10')
 	expect(b.prototype).to.equal(undefined)
 	var b = new Base
-	expect(new Base).to.equal(Base.prototype)
+	
 	console.log("----------------")
 	for(var propertyName in new Base('10')) {
 	   console.log(propertyName)
