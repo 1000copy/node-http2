@@ -847,7 +847,7 @@ describe('http.js', function() {
             if (typeof options === "string") {
               options = url.parse(options);
             }
-            options.plain = false;
+            options.plain = false;            
             if (options.protocol && options.protocol !== "https:") {
               throw new Error('This interface only supports https-schemed URLs');
             }
@@ -856,6 +856,45 @@ describe('http.js', function() {
 
             }
             var request = agent.get(options, callback);
+            request.on('response', function(response) {
+              response.on('data', function(data) {
+                expect(data.toString()).to.equal(message);
+                expect("false:localhost:"+port in request.agent.endpoints ).to.equal(true)                
+                done();
+              });            
+            });
+            expect(request.agent).to.equal(agent)
+            done();
+          })
+      });
+      it('agent2auth', function(done) {
+          var path = '/x';
+          var message = 'server response';
+          var port = 1500
+          done = util.callNTimes(2, done);  
+          var url = require('url');
+          var Agent = require('../lib/http.js').Agent
+          var server = http2.createServer(options, function(request, response) {
+              expect(request.url).to.equal(path);
+              response.end(message);
+          });
+          var uu = 'https://localhost:'+port;
+          //  两个并发的请求，（同样的host,port,type),应该导致endpoint的共享。
+          server.listen(port, function() { 
+            var options = 'https://localhost:'+port+'/x';
+            if (typeof options === "string") {
+              options = url.parse(options);
+            }
+            options.plain = false;            
+            options.auth ="user:pwd"
+            
+            var agent = new Agent ;        
+            function callback(){
+
+            }
+            var request = agent.get(options, callback);
+            console.log(request._headers);
+            //
             request.on('response', function(response) {
               response.on('data', function(data) {
                 expect(data.toString()).to.equal(message);
