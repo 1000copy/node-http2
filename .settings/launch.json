@@ -28,6 +28,16 @@
 			"address": "localhost",
 			// Port to attach to.
 			"port": 5858
-		}
+		},
+		{
+            "name": "Run mocha",
+            "type": "node",
+            "program": "C:\\Users\\lcj\\AppData\\Roaming\\npm\\_mocha.cmd",
+            "stopOnEntry": false,
+            "args": [],
+            "cwd": ".",
+            "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+            "env": { "NODE_ENV": "production"}
+        }
 	]
 }

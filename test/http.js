@@ -658,42 +658,7 @@ describe('http.js', function() {
         done();
       });
     });
-    describe('event emit by which object？', function() {
-      it('emitter1', function(done) {
-          var E = require('events').EventEmitter;
-          var e = new E;
-          e.on('a',function(){console.log('a')})
-          e.emit('a')
-          done();          
-      });
-      it('emitter2', function(done) {
-          var EventEmitter = require('events').EventEmitter;
-          function Dummy() {              
-              EventEmitter.call(this);              
-          }          
-          Dummy.prototype = Object.create(EventEmitter.prototype, { constructor: { value: Dummy } });
-          Dummy.prototype.dosth = function(){
-            this.emit("a",this)
-          }
-          function Dummy1() {              
-              Dummy.call(this);              
-          }          
-          Dummy1.prototype = Object.create(Dummy.prototype, { constructor: { value: Dummy1 } });
-          Dummy1.prototype.dosth1 = function(){
-            this.emit("b",this)
-          }
-          var d = new Dummy1();
-          // 原来以为emit之后堆栈就乱，无法知道事件代码的上下文。实际上，可以的。console.trace会告诉我。
-          d.on("a",function(o){expect(o.constructor.name).to.equal("Dummy1");console.trace()})    
-          d.on("b",function(o){expect(o.constructor.name).to.equal("Dummy1");console.trace()})    
-          // console.log(d)
-          expect(typeof d._events.a).to.equal("function")
-          expect(typeof d._events.b).to.equal("function")          
-          d.dosth();
-          d.dosth1();          
-          done();
-      });      
-    });
+   
   // mocha -g new1 
     describe('new2', function() {
       it('2', function(done) {
@@ -786,8 +751,9 @@ describe('http.js', function() {
           server.listen(1235, function() {          
             var request = http2.get('https://localhost:1235' + path);
             expect(request.constructor.name).to.equal("OutgoingRequest")
-            // done = util.callNTimes(2, done);        
+               
             request.on('push', function(promise) {
+              // console.trace();
               promise.cancel();
               promise.on('response', function(pushStream) {
                 expect(1).to.equal(0)// 不应该到这里
@@ -800,19 +766,73 @@ describe('http.js', function() {
             });
           });
         });
+      });    
+      it('endpoint2', function(done) {
+          var path = '/x';
+          var message = 'server response';
+          done = util.callNTimes(3, done);        
+          var server = http2.createServer(options, function(request, response) {
+            expect(request.url).to.equal(path);
+            response.end(message);
+          });
+          //  两个并发的请求，（同样的host,port,type),应该导致endpoint的共享。
+          server.listen(1235, function() {        
+           
+            // in the meantime ...
+            {
+              var request = http2.get('https://localhost:1235' + path);
+              // request.once("shareMode",function(s){expect(s).to.equal(1)  ;done();  })
+              request.on('response', function(response) {
+                response.on('data', function(data) {
+                  expect(data.toString()).to.equal(message);
+                  expect("false:localhost:1235" in request.agent.endpoints ).to.equal(true)
+                  expect(Object.keys(request.agent.endpoints)).to.deep.equal(['false:localhost:1235'])                  
+                  done();
+                });            
+              });
+              
+            }
+            
+            {
+              var request = http2.get('https://localhost:1235' + path);
+              // request.once("shareMode",function(s){expect(s).to.equal(2)   ;done(); })
+              request.on('response', function(response) {
+                response.on('data', function(data) {
+                  expect(data.toString()).to.equal(message);
+                  expect("false:localhost:1235" in request.agent.endpoints ).to.equal(true)
+                  expect(Object.keys(request.agent.endpoints)).to.deep.equal(['false:localhost:1235'])                  
+                  done();
+                });            
+              });
+              
+            }
+
+            // 延时一段时间的，就不需要考虑 in the meantime的并发要件 .但是也共享endpoint
+            setTimeout(function(){
+              var request = http2.get('https://localhost:1235' + path);
+              // request.once("shareMode",function(s){expect(s).to.equal(3)   ;done(); })
+              request.on('response', function(response) {
+                response.on('data', function(data) {
+                  expect(data.toString()).to.equal(message);
+                  expect("false:localhost:1235" in request.agent.endpoints ).to.equal(true)
+                  expect(Object.keys(request.agent.endpoints)).to.deep.equal(['false:localhost:1235'])                  
+                  done();
+                });            
+              });
+              
+            },1500)
+          });
+          
       });
       it('1', function(done) {
-        // var Readable = require('stream').Readable;
-        // var stream = new Readable();
-        // stream._read = function(){stream.push("222");stream.push(null);};
-        // stream.pipe(process.stdout)
+        done();
+      });
+      it('basicrealm', function(done) {
+        // var r = new OutgoingRequest ;
+        // var options = {}
+        // r._start(undefined,options)
         done();
       });
     });
-
-
-
-  
-
   });
 });
